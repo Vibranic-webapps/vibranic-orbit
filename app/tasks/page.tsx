@@ -43,7 +43,6 @@ export default function TasksPage() {
 
     const handleAddTask = async () => {
         setError(null);
-        setLoading(true);
         try {
             if (!name || !startDateTime || !endDateTime) {
                 setError("Please fill in all required fields.");
@@ -76,14 +75,11 @@ export default function TasksPage() {
         } catch (error) {
             console.error("Error adding task:", error);
             setError("Failed to add task.");
-        } finally {
-            setLoading(false);
         }
     };
 
     useEffect(() => {
         async function fetchTasks() {
-            setLoading(true);
             try {
                 const response = await fetch("/api/tasks");
                 if (response.ok) {
@@ -99,7 +95,6 @@ export default function TasksPage() {
         }
 
         async function fetchCategories() {
-            setLoading(true);
             try {
                 const response = await fetch("/api/categories");
                 if (response.ok) {
@@ -109,9 +104,7 @@ export default function TasksPage() {
             } catch (error) {
                 console.error("Error fetching categories:", error);
                 setError("Failed to fetch categories.");
-            } finally {
-                setLoading(false);
-            }
+            } 
         }
 
         void fetchTasks();
@@ -185,7 +178,7 @@ export default function TasksPage() {
                     {tasks.map(task => (
                         <div key={task.id} className="border p-4 rounded">
                             <h2 className="text-xl font-bold">{task.name}</h2>
-                            <p>{task.description}</p>
+                            <p>{task.description || "No description available."}</p>
                             <p>Start: {new Date(task.startDateTime).toLocaleString()}</p>
                             <p>End: {new Date(task.endDateTime).toLocaleString()}</p>
                             <p>Priority: {task.priority}</p>
