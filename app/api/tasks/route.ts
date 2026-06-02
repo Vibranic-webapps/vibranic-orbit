@@ -27,19 +27,22 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        const startDate = new Date(startDateTime);
+        const endDate = new Date(endDateTime);
+
         const task = await prisma.task.create({
             data: {
                 name,
                 description,
-                startDateTime,
-                endDateTime,
+                startDateTime: startDate,
+                endDateTime: endDate,
                 priority,
                 categoryId,
                 userId
             }
         });
 
-        return NextResponse.json(task);
+        return NextResponse.json({task}, { status: 201 });
     } catch (error) {
         console.error("Error creating task:", error);
         return NextResponse.json({ error: "Failed to create task" }, { status: 500 });
