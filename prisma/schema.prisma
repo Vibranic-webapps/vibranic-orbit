@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+
+enum Priority {
+  EXTRA_SMALL
+  SMALL
+  MEDIUM
+  LARGE
+  EXTRA_LARGE
+}
+
+model Category {
+  id             String          @id @default(cuid())
+  userId         String
+  name           String
+  icon           String
+  color          String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  tasks          Task[]
+
+  @@index([userId])
+  @@unique([userId, name])
+}
+
+model Task {
+  id             String          @id @default(cuid())
+  userId         String
+  name           String
+  description    String?
+  startDateTime  DateTime
+  endDateTime    DateTime
+  priority       Priority        @default(MEDIUM)
+  completed      Boolean         @default(false)
+  favorite       Boolean         @default(false)
+  categoryId     String? 
+  category       Category?       @relation(fields: [categoryId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model ColorPreset {
+  id             String          @id @default(cuid())
+  userId         String
+  color          String
+  label          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([userId])
+}
