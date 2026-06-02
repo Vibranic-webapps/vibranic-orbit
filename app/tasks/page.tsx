@@ -37,13 +37,13 @@ export default function TasksPage() {
     const [startDateTime, setStartDateTime] = useState("");
     const [endDateTime, setEndDateTime] = useState("");
     const [priority, setPriority] = useState("MEDIUM");
-    const [completed, setCompleted] = useState(false);
-    const [favorite, setFavorite] = useState(false);
     const [categoryId, setCategoryId] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const handleAddTask = async () => {
+        setError(null);
+        setLoading(true);
         try {
             if (!name || !startDateTime || !endDateTime) {
                 setError("Please fill in all required fields.");
@@ -58,7 +58,7 @@ export default function TasksPage() {
             const response = await fetch("/api/tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, description, startDateTime, endDateTime, priority, completed, favorite, categoryId })
+                body: JSON.stringify({ name, description, startDateTime, endDateTime, priority, categoryId })
             });
             if (response.ok) {
                 const newTask = await response.json();
@@ -68,8 +68,6 @@ export default function TasksPage() {
                 setStartDateTime("");
                 setEndDateTime("");
                 setPriority("MEDIUM");
-                setCompleted(false);
-                setFavorite(false);
                 setCategoryId("");
                 setError(null);
             } else {
@@ -78,11 +76,14 @@ export default function TasksPage() {
         } catch (error) {
             console.error("Error adding task:", error);
             setError("Failed to add task.");
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
         async function fetchTasks() {
+            setLoading(true);
             try {
                 const response = await fetch("/api/tasks");
                 if (response.ok) {
@@ -98,6 +99,7 @@ export default function TasksPage() {
         }
 
         async function fetchCategories() {
+            setLoading(true);
             try {
                 const response = await fetch("/api/categories");
                 if (response.ok) {
@@ -107,6 +109,8 @@ export default function TasksPage() {
             } catch (error) {
                 console.error("Error fetching categories:", error);
                 setError("Failed to fetch categories.");
+            } finally {
+                setLoading(false);
             }
         }
 
@@ -154,7 +158,6 @@ export default function TasksPage() {
                     {categories.map(category => (
                         <option key={category.id} value={category.id}>{category.name}</option>
                     ))}
-
                 </select>
                 <select
                     value={priority}
@@ -167,31 +170,14 @@ export default function TasksPage() {
                     <option value="LARGE">Large</option>
                     <option value="EXTRA_LARGE">Extra Large</option>
                 </select>
-                <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        checked={completed}
-                        onChange={(e) => setCompleted(e.target.checked)}
-                    />
-                    Completed
-                </label>
-                <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        checked={favorite}
-                        onChange={(e) => setFavorite(e.target.checked)}
-                    />
-                    Favorite
-                </label>
                 <button onClick={handleAddTask}>Add Task</button>
+                {error && <p className="text-red-500">{error}</p>}
             </div>
         </div>
         <div className="p-4">
             <h1 className="text-2xl font-bold mb-4">Tasks</h1>
             {loading ? (
                 <p>Loading tasks...</p>
-            ) : error ? (
-                <p>{error}</p>
             ) : tasks.length === 0 ? (
                 <p>No tasks found.</p>
             ) : (

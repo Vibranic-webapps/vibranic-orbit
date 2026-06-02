@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await request.json();
-        const { name, description, startDateTime, endDateTime, priority, completed, favorite, categoryId } = body;
+        const { name, description, startDateTime, endDateTime, priority, categoryId } = body;
 
         if (!name || !startDateTime || !endDateTime) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -37,8 +37,6 @@ export async function POST(request: NextRequest) {
                 startDateTime: startDate,
                 endDateTime: endDate,
                 priority,
-                completed,
-                favorite,
                 categoryId: categoryId || null,
                 userId
             },
