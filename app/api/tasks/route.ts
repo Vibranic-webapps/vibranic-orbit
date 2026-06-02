@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await request.json();
-        const { name, description, startDateTime, endDateTime, priority, categoryId } = body;
+        const { name, description, startDateTime, endDateTime, priority, completed, favorite, categoryId } = body;
 
         if (!name || !startDateTime || !endDateTime) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -30,19 +30,22 @@ export async function POST(request: NextRequest) {
         const startDate = new Date(startDateTime);
         const endDate = new Date(endDateTime);
 
-        const task = await prisma.task.create({
+        const newTask = await prisma.task.create({
             data: {
                 name,
                 description,
                 startDateTime: startDate,
                 endDateTime: endDate,
                 priority,
-                categoryId,
+                completed,
+                favorite,
+                categoryId: categoryId || null,
                 userId
-            }
+            },
+            include: { category: true }
         });
 
-        return NextResponse.json({task}, { status: 201 });
+        return NextResponse.json(newTask, { status: 201 });
     } catch (error) {
         console.error("Error creating task:", error);
         return NextResponse.json({ error: "Failed to create task" }, { status: 500 });

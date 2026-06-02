@@ -63,7 +63,8 @@ export default function CategoriesPage() {
             try {
                 const response = await fetch("/api/categories");
                 if (response.ok) {
-                    setCategories(await response.json());
+                    const data = await response.json();
+                    setCategories(data);
                 }
             } catch (error) {
                 console.error("Error fetching categories:", error);
