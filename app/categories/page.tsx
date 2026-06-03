@@ -98,7 +98,7 @@ export default function CategoriesPage() {
                         <ul>
                             {categories.map(category => (
                                 <li key={category.id} style={{ color: category.color }} className="flex items-center gap-2" >
-                                    <DynamicIcon name={category.icon as IconName} size={16} />
+                                    <DynamicIcon name={category.icon as IconName} size={24} />
                                     <span>{category.name}</span>
                                 </li>
                             ))}
