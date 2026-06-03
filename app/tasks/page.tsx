@@ -103,6 +103,22 @@ export default function TasksPage() {
         }
     }
 
+    const handleDeleteTask = async (task: Task) => {
+        try {
+            const response = await fetch(`/api/tasks/${task.id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+            })
+
+            if (response.ok) {
+                setTasks(tasks.filter(t => t.id !== task.id));
+            }
+        } catch(error) {
+            console.error("Error deleting task:", error);
+            setError("Failed to delete task.");
+        } 
+    }
+
     useEffect(() => {
         async function fetchTasks() {
             try {
@@ -223,6 +239,9 @@ export default function TasksPage() {
                                 </button>
                                 <button className="p-2" onClick={() => handleUpdateTask(task, {favorite: !task.favorite})}>
                                     <Heart className={`text-red-500 ${task.favorite ? "fill-red-500" : ""}`} size={24} />
+                                </button>
+                                <button onClick={() => handleDeleteTask(task)}>
+                                    Delete
                                 </button>
                             </div>
                         ))}
