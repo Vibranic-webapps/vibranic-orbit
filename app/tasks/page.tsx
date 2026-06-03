@@ -34,6 +34,9 @@ interface Category {
 export default function TasksPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    
+    const initialForm = { name: "", description: "", startDateTime: "", endDateTime: "", priority: "MEDIUM" as Task["priority"], categoryId: "" };
+    const [form, setForm] = useState(initialForm);
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<{
@@ -45,32 +48,15 @@ export default function TasksPage() {
         categoryId: string;
     }>({ name: "", description: "", startDateTime: "", endDateTime: "", priority: "MEDIUM", categoryId: "" });
 
-    const [addForm, setAddForm] = useState<{
-        name: string;
-        description: string;
-        startDateTime: string;
-        endDateTime: string;
-        priority: Task["priority"];
-        categoryId: string;
-    }>({ name: "", description: "", startDateTime: "", endDateTime: "", priority: "MEDIUM", categoryId: "" });
-
-
-    const [categoryId, setCategoryId] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [startDateTime, setStartDateTime] = useState("");
-    const [endDateTime, setEndDateTime] = useState("");
-    const [priority, setPriority] = useState("MEDIUM");
     
     const priorityOptions = [
-        { value: "EXTRA_SMALL", label: "Extra Small", color: "blue" },
-        { value: "SMALL", label: "Small" },
-        { value: "MEDIUM", label: "Medium" },
-        { value: "LARGE", label: "Large" },
-        { value: "EXTRA_LARGE", label: "Extra Large" }
+        { value: "EXTRA_SMALL", label: "Extra Small", color: "bg-amber-500", border: "border-amber-700" },
+        { value: "SMALL",       label: "Small",       color: "bg-emerald-500", border: "border-emerald-700" },
+        { value: "MEDIUM",      label: "Medium",      color: "bg-teal-500", border: "border-teal-700" },
+        { value: "LARGE",       label: "Large",       color: "bg-rose-500", border: "border-rose-700" },
+        { value: "EXTRA_LARGE", label: "Extra Large", color: "bg-indigo-500", border: "border-indigo-700" },
     ];
 
     const startEdit = (task: Task) => {
@@ -88,12 +74,12 @@ export default function TasksPage() {
     const handleAddTask = async () => {
         setError(null);
         try {
-            if (!name || !startDateTime || !endDateTime) {
+            if (!form.name || !form.startDateTime || !form.endDateTime) {
                 setError("Please fill in all required fields.");
                 return;
             }
 
-            if (new Date(startDateTime) >= new Date(endDateTime)) {
+            if (new Date(form.startDateTime) >= new Date(form.endDateTime)) {
                 setError("Start date and time must be before end date and time.");
                 return;
             }
@@ -101,17 +87,12 @@ export default function TasksPage() {
             const response = await fetch("/api/tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, description, startDateTime, endDateTime, priority, categoryId })
+                body: JSON.stringify(form)
             });
             if (response.ok) {
                 const newTask = await response.json();
                 setTasks([...tasks, newTask]);
-                setName("");
-                setDescription("");
-                setStartDateTime("");
-                setEndDateTime("");
-                setPriority("MEDIUM");
-                setCategoryId("");
+                setForm(initialForm)
                 setError(null);
             } else {
                 setError("Failed to add task.");
@@ -196,35 +177,35 @@ export default function TasksPage() {
                         <input
                             type="text"
                             placeholder="Task Name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            value={form.name}
+                            onChange={(e) => setForm({...form, name: e.target.value})}
                             className="border p-2 rounded w-full"
                         />
                         <input
                             type="text"
                             placeholder="Description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            value={form.description}
+                            onChange={(e) => setForm({...form, description: e.target.value})}
                             className="border p-2 rounded w-full"
                         />
                     </div>
                     <div className="flex flex-row gap-2 w-full">
                         <input
                             type="datetime-local"
-                            value={startDateTime}
-                            onChange={(e) => setStartDateTime(e.target.value)}
+                            value={form.startDateTime}
+                            onChange={(e) => setForm({...form, startDateTime: e.target.value})}
                             className="border p-2 rounded w-full"
                         />
                         <input
                             type="datetime-local"
-                            value={endDateTime}
-                            onChange={(e) => setEndDateTime(e.target.value)}
+                            value={form.endDateTime}
+                            onChange={(e) => setForm({...form, endDateTime: e.target.value})}
                             className="border p-2 rounded w-full "
                         />
                     </div>
                     <select
-                        value={categoryId}
-                        onChange={(e) => setCategoryId(e.target.value)}
+                        value={form.categoryId}
+                        onChange={(e) => setForm({...form, categoryId: e.target.value})}
                         className="border p-2 rounded w-full "
                     >
                         <option value="">Select Category</option>
@@ -233,8 +214,8 @@ export default function TasksPage() {
                         ))}
                     </select>
                     <select
-                        value={priority}
-                        onChange={(e) => setPriority(e.target.value)}
+                        value={form.priority}
+                        onChange={(e) => setForm({...form, priority: e.target.value as Task["priority"]} )}
                         className="border p-2 rounded w-full"
                     >
                         {priorityOptions.map(option => (
@@ -258,94 +239,99 @@ export default function TasksPage() {
                     <p>No tasks found.</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {tasks.map(task => (
-                            <div key={task.id} className="border p-4 rounded">
-                                {editingId === task.id ? (
-                                    <div>
-                                        <p>Editing task <span className="text-blue-500 font-semibold">{task.name.toUpperCase()}</span></p>
-                                        <input
-                                            type="text"
-                                            value={editForm.name}
-                                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                            className="border p-2 rounded w-full"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={editForm.description}
-                                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                            className="border p-2 rounded w-full"
-                                        />
-                                        <input
-                                            type="datetime-local"
-                                            value={editForm.startDateTime}
-                                            onChange={(e) => setEditForm({ ...editForm, startDateTime: e.target.value })}
-                                            className="border p-2 rounded w-full"
-                                        />
-                                        <input
-                                            type="datetime-local"
-                                            value={editForm.endDateTime}
-                                            onChange={(e) => setEditForm({ ...editForm, endDateTime: e.target.value })}
-                                            className="border p-2 rounded w-full "
-                                        />
-                                        <select
-                                            value={editForm.categoryId}
-                                            onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value })}
-                                            className="border p-2 rounded w-full "
-                                        >
-                                            <option value="">Select Category</option>
-                                            {categories.map(category => (
-                                                <option key={category.id} value={category.id}>{category.name}</option>
-                                            ))}
-                                        </select>
-                                        <select
-                                            value={editForm.priority}
-                                            onChange={(e) => setEditForm({ ...editForm, priority: e.target.value as Task["priority"] })}
-                                            className="border p-2 rounded w-full"
-                                        >
-                                            {priorityOptions.map(option => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <button onClick={() => setEditingId(null)}>
-                                            Cancel
-                                        </button>
-                                        <button onClick={() => { handleUpdateTask(task, editForm); setEditingId(null); }}>Submit</button>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col">
-                                        <h2 className="text-xl font-bold">{task.name}</h2>
-                                        <p>{task.description || "No description available."}</p>
-                                        <div className="flex">
-                                            <p>Start: {new Date(task.startDateTime).toLocaleString()}</p>
-                                            <p>End: {new Date(task.endDateTime).toLocaleString()}</p>
+                        {tasks.map(task => {
+                            const priorityOption = priorityOptions.find(o => o.value === task.priority);
+                            return (
+                                <div key={task.id} className="border p-4 rounded">
+                                    {editingId === task.id ? (
+                                        <div>
+                                            <p>Editing task <span className="text-blue-500 font-semibold">{task.name.toUpperCase()}</span></p>
+                                            <input
+                                                type="text"
+                                                value={editForm.name}
+                                                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                                className="border p-2 rounded w-full"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={editForm.description}
+                                                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                                className="border p-2 rounded w-full"
+                                            />
+                                            <input
+                                                type="datetime-local"
+                                                value={editForm.startDateTime}
+                                                onChange={(e) => setEditForm({ ...editForm, startDateTime: e.target.value })}
+                                                className="border p-2 rounded w-full"
+                                            />
+                                            <input
+                                                type="datetime-local"
+                                                value={editForm.endDateTime}
+                                                onChange={(e) => setEditForm({ ...editForm, endDateTime: e.target.value })}
+                                                className="border p-2 rounded w-full "
+                                            />
+                                            <select
+                                                value={editForm.categoryId}
+                                                onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value })}
+                                                className="border p-2 rounded w-full "
+                                            >
+                                                <option value="">Select Category</option>
+                                                {categories.map(category => (
+                                                    <option key={category.id} value={category.id}>{category.name}</option>
+                                                ))}
+                                            </select>
+                                            <select
+                                                value={editForm.priority}
+                                                onChange={(e) => setEditForm({ ...editForm, priority: e.target.value as Task["priority"] })}
+                                                className="border p-2 rounded w-full"
+                                            >
+                                                {priorityOptions.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button onClick={() => setEditingId(null)}>
+                                                Cancel
+                                            </button>
+                                            <button onClick={() => { handleUpdateTask(task, editForm); setEditingId(null); }}>Submit</button>
                                         </div>
-                                        <p className={`border rounded-md w-fit px-2.5 py-0.5 text-xs`}>{task.priority}</p>
-                                        <DynamicIcon name={task.category?.icon as IconName} size={24} />
-                                        <div className="">
-                                            <button className="p-2" onClick={() => handleUpdateTask(task, { completed: !task.completed })}>
-                                                {task.completed
-                                                    ? <CircleCheck className="text-green-500" size={24} />
-                                                    : <X className="text-red-500" size={24} />
-                                                }
-                                            </button>
-                                            <button className="p-2" onClick={() => handleUpdateTask(task, { favorite: !task.favorite })}>
-                                                <Heart className={`${task.favorite ? "fill-red-500" : "text-red-500 "}`} size={24} />
-                                            </button>
+                                    ) : (
+                                        <div className="flex flex-col">
+                                            <h2 className="text-xl font-bold">{task.name}</h2>
+                                            <p>{task.description || "No description available."}</p>
+                                            <div className="flex">
+                                                <p>Start: {new Date(task.startDateTime).toLocaleString()}</p>
+                                                <p>End: {new Date(task.endDateTime).toLocaleString()}</p>
+                                            </div>
+                                            <p className={`border-2 rounded-md w-fit px-2.5 py-0.5 text-xs text-white ${priorityOption?.border} ${priorityOption?.color}`}>
+                                                {task.priority}
+                                            </p>
+                                            <DynamicIcon name={task.category?.icon as IconName} size={24} />
+                                            <div className="">
+                                                <button className="p-2" onClick={() => handleUpdateTask(task, { completed: !task.completed })}>
+                                                    {task.completed
+                                                        ? <CircleCheck className="text-green-500" size={24} />
+                                                        : <X className="text-red-500" size={24} />
+                                                    }
+                                                </button>
+                                                <button className="p-2" onClick={() => handleUpdateTask(task, { favorite: !task.favorite })}>
+                                                    <Heart className={`${task.favorite ? "fill-red-500" : "text-red-500 "}`} size={24} />
+                                                </button>
+                                            </div>
+                                            <div className="">
+                                                <button className="p-2" onClick={() => handleDeleteTask(task)}>
+                                                    <Trash size={24} />
+                                                </button>
+                                                <button className="p-2" onClick={() => startEdit(task)}>
+                                                    <Pencil size={24} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="">
-                                            <button className="p-2" onClick={() => handleDeleteTask(task)}>
-                                                <Trash size={24} />
-                                            </button>
-                                            <button className="p-2" onClick={() => startEdit(task)}>
-                                                <Pencil size={24} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
                 )}
             </div>
