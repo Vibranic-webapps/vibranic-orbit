@@ -9,7 +9,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         
         const { id } = await params;
-        const task = await prisma.task.findFirst({ where: { id: id, userId: userId } });
+        const task = await prisma.task.findFirst({ where: { id, userId } });
         if (!task) return NextResponse.json({ error: "Task not found" }, { status: 404 });
 
         const body = await request.json();
@@ -33,5 +33,24 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     } catch (error) {
         console.error("Error updating task:", error);
         return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { userId } = await auth()
+        if (!userId) return NextResponse.json({ error: "Unauthorized" }, {status: 401})
+
+        const { id } = await params
+        const task = await prisma.task.findFirst({ where: { id, userId }})
+        if (!task) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+
+        await prisma.task.delete({where: { id }})
+
+        return NextResponse.json({Response: "Task deleted succesfully"}, {status: 200})
+    } catch(error) {
+        console.error("Error Deleting task:", error)
+        return NextResponse.json({error: "failed to delete task"}, {status: 500})
     }
 }
