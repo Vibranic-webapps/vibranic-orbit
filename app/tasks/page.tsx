@@ -170,7 +170,7 @@ export default function TasksPage() {
     }, []);
 
     return (
-        <div className="p-4 flex flex-col gap-4 bg-">
+        <div className="p-4 flex flex-col gap-4">
             <form className="w-full flex justify-center">
                 <div className="flex flex-col gap-4 w-max">
                     <div className="flex flex-row gap-2 w-full">
