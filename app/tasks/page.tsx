@@ -1,39 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Heart, CircleCheck, X, Trash, Pencil } from 'lucide-react';
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { useTasks } from "../hooks/useTasks"; 
+import { useCategories } from "../hooks/useCategories";
+import { Task } from "@/app/types";
 
-interface Task {
-    id: string;
-    name: string;
-    description?: string;
-    startDateTime: string;
-    endDateTime: string;
-    priority: "EXTRA_SMALL" | "SMALL" | "MEDIUM" | "LARGE" | "EXTRA_LARGE";
-    completed: boolean;
-    favorite: boolean;
-    categoryId?: string;
-    userId: string;
-    category?: {
-        id: string;
-        name: string;
-        color: string;
-        icon: string;
-    } | null;
-}
-
-interface Category {
-    id: string;
-    name: string;
-    color: string;
-    icon: string;
-    userId: string;
-}
 
 export default function TasksPage() {
-    const [tasks, setTasks] = useState<Task[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
+    const { tasks, setTasks, loading } = useTasks();
+    const { categories } = useCategories();
     
     const initialForm = { name: "", description: "", startDateTime: "", endDateTime: "", priority: "MEDIUM" as Task["priority"], categoryId: "" };
     const [form, setForm] = useState(initialForm);
@@ -48,7 +25,6 @@ export default function TasksPage() {
         categoryId: string;
     }>({ name: "", description: "", startDateTime: "", endDateTime: "", priority: "MEDIUM", categoryId: "" });
 
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
     const priorityOptions = [
@@ -135,39 +111,6 @@ export default function TasksPage() {
             setError("Failed to delete task.");
         }
     }
-
-    useEffect(() => {
-        async function fetchTasks() {
-            try {
-                const response = await fetch("/api/tasks");
-                if (response.ok) {
-                    const data = await response.json();
-                    setTasks(data);
-                }
-            } catch (error) {
-                console.error("Error fetching tasks:", error);
-                setError("Failed to fetch tasks.");
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        async function fetchCategories() {
-            try {
-                const response = await fetch("/api/categories");
-                if (response.ok) {
-                    const data = await response.json();
-                    setCategories(data);
-                }
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-                setError("Failed to fetch categories.");
-            }
-        }
-
-        void fetchTasks();
-        void fetchCategories();
-    }, []);
 
     return (
         <div className="p-4 flex flex-col gap-4">

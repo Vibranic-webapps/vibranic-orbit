@@ -1,19 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { IconPicker } from "@/components/IconPicker";
+import { useCategories } from "../hooks/useCategories";
 
-interface Category {
-    id: string;
-    name: string;
-    color: string;
-    icon: string;
-}
 
 export default function CategoriesPage() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { categories, setCategories, loading } = useCategories();
     const [error, setError] = useState<string | null>(null);
     const [name, setName] = useState("");
     const [color, setColor] = useState("#3b82f6");
@@ -57,25 +51,6 @@ export default function CategoriesPage() {
             setError("An error occurred while adding the category.");
         } 
     };
-
-    useEffect(() => {
-        async function fetchCategories() {
-            try {
-                const response = await fetch("/api/categories");
-                if (response.ok) {
-                    const data = await response.json();
-                    setCategories(data);
-                }
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-                setError("Failed to fetch categories.");
-            } finally { 
-                setLoading(false);
-            }
-        }
-    
-        void fetchCategories();
-    }, [])
     return (
         <>
             <div>
