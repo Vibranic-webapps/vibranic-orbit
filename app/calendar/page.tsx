@@ -1,36 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-
-interface Task {
-    id: string;
-    name: string;
-    description?: string;
-    startDateTime: string;
-    endDateTime: string;
-    priority: "EXTRA_SMALL" | "SMALL" | "MEDIUM" | "LARGE" | "EXTRA_LARGE";
-    completed: boolean;
-    favorite: boolean;
-    categoryId?: string;
-    userId: string;
-    category?: {
-        id: string;
-        name: string;
-        color: string;
-        icon: string;
-    } | null;
-}
+import { useTasks } from "../hooks/useTasks"; 
 
 export default function CalendarPage() {
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const { tasks, setTasks, loading } = useTasks();
     const [viewDate, setViewDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     const [newTaskName, setNewTaskName] = useState("");
 
-
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const year = viewDate.getFullYear();
@@ -79,25 +59,6 @@ export default function CalendarPage() {
         }
     }
 
-    useEffect(() => {
-        async function fetchTasks() {
-            try {
-                const response = await fetch("/api/tasks");
-                if (response.ok) {
-                    const data = await response.json();
-                    setTasks(data);
-                }
-            } catch (error) {
-                console.error("Error fetching tasks:", error);
-                setError("Failed to fetch tasks.");
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        void fetchTasks();
-    }, []);
-
     return (
         <main className="flex flex-row justify-center w-full">
             <div className="flex flex-col md:w-3/4 xl:w-2/4">
@@ -137,24 +98,22 @@ export default function CalendarPage() {
                         </div>
                     ))}
                 </div>
-            {selectedDate && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded shadow-lg">
-                    <h2 className="font-bold mb-2">Add task for {selectedDate.toDateString()}</h2>
-                    <input
-                        type="text"
-                        placeholder="Task name"
-                        value={newTaskName}
-                        onChange={(e) => setNewTaskName(e.target.value)}
-                        className="border p-2 rounded w-full mb-2"
-                    />
-                    <button onClick={() => setSelectedDate(null)}>Close</button>
-                    <button onClick={handleAddTask} className="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
-
+                {selectedDate && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="bg-white p-6 rounded shadow-lg">
+                        <h2 className="font-bold mb-2">Add task for {selectedDate.toDateString()}</h2>
+                        <input
+                            type="text"
+                            placeholder="Task name"
+                            value={newTaskName}
+                            onChange={(e) => setNewTaskName(e.target.value)}
+                            className="border p-2 rounded w-full mb-2"
+                        />
+                        <button onClick={() => setSelectedDate(null)}>Close</button>
+                        <button onClick={handleAddTask} className="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
+                        </div>
                     </div>
-                </div>
-            )}
-
+                )}
             </div>
         </main>
     );
