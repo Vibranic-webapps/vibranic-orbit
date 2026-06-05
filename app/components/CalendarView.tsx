@@ -1,17 +1,18 @@
 "use client";
-
 import { useState } from "react";
-import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { useTasks } from "../hooks/useTasks"; 
+import { ChevronRight, ChevronLeft } from "lucide-react";
+import { Task } from "@/app/types";
 
-export default function CalendarPage() {
-    const { tasks, setTasks, loading } = useTasks();
+interface CalendarViewProps {
+    tasks: Task[];
+    setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+}
+
+export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
     const [viewDate, setViewDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     const [newTaskName, setNewTaskName] = useState("");
-
-    const [error, setError] = useState<string | null>(null);
 
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
