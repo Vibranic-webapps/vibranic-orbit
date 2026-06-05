@@ -25,6 +25,10 @@ interface Task {
 export default function CalendarPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [viewDate, setViewDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    const [newTaskName, setNewTaskName] = useState("");
+
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -51,6 +55,29 @@ export default function CalendarPage() {
     const goToToday = () => setViewDate(new Date());
 
     const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+    const handleAddTask = async () => {
+        if (!newTaskName || !selectedDate) return;
+        try {
+            const response = await fetch("/api/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: newTaskName,
+                    startDateTime: selectedDate.toISOString(),
+                    endDateTime: selectedDate.toISOString(),
+                }),
+            });
+            if (response.ok) {
+                const newTask = await response.json();
+                setTasks([...tasks, newTask]);
+                setNewTaskName("");
+                setSelectedDate(null);
+            }
+        } catch(error) {
+            console.error("Error adding task:", error)
+        }
+    }
 
     useEffect(() => {
         async function fetchTasks() {
@@ -100,7 +127,7 @@ export default function CalendarPage() {
                     {cells.map((cell, index) => (
                         <div key={index} className="border px-2 pt-1 pb-2 text-center">
                             {cell !== null && (
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2" onClick={() => setSelectedDate(cell)}>
                                     <div className="text-right">{cell.getDate()}</div>
                                     {tasksForDay(cell).map(task => (
                                         <div key={task.id} className="text-xs rounded px-1 bg-blue-500 truncate">{task.name}</div>
@@ -110,6 +137,24 @@ export default function CalendarPage() {
                         </div>
                     ))}
                 </div>
+            {selectedDate && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded shadow-lg">
+                    <h2 className="font-bold mb-2">Add task for {selectedDate.toDateString()}</h2>
+                    <input
+                        type="text"
+                        placeholder="Task name"
+                        value={newTaskName}
+                        onChange={(e) => setNewTaskName(e.target.value)}
+                        className="border p-2 rounded w-full mb-2"
+                    />
+                    <button onClick={() => setSelectedDate(null)}>Close</button>
+                    <button onClick={handleAddTask} className="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
+
+                    </div>
+                </div>
+            )}
+
             </div>
         </main>
     );
