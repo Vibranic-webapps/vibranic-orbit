@@ -13,7 +13,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         if (!task) return NextResponse.json({ error: "Task not found" }, { status: 404 });
 
         const body = await request.json();
-        const { name, description, startDateTime, endDateTime, priority, categoryId, favorite, completed } = body;
+        const { name, description, startDateTime, endDateTime, priority, categoryId,
+        favorite, completed, frequency, interval, byWeekday, recurrenceEnd } = body;
+
 
         const updatedTask = await prisma.task.update({
             where: { id: id },
@@ -25,7 +27,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                 priority,
                 categoryId: categoryId || undefined,
                 favorite,
-                completed
+                completed,
+                frequency,
+                interval,
+                byWeekday,
+                recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : recurrenceEnd
             },
             include: { category: true }
         });

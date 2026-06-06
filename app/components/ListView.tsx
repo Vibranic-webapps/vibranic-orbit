@@ -2,7 +2,10 @@
 import { useState } from "react";
 import { Heart, CircleCheck, X, Trash, Pencil } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { Task, Category } from "@/app/types";
+import { Task, Category, TaskFormValues, FormErrors } from "@/app/types";
+import { priorityOptions } from "@/app/constants"
+import TaskForm from "./TaskForm";
+
 
 interface ListViewProps {
     tasks: Task[];
@@ -11,29 +14,69 @@ interface ListViewProps {
     categories: Category[];
 }
 
+const initialForm: TaskFormValues = {
+    name: "",
+    description: "",
+    startDateTime: "",
+    endDateTime: "",
+    priority: "MEDIUM",
+    categoryId: "",
+    frequency: "",
+    interval: 1,
+    byWeekday: [],
+    recurrenceEnd: "",
+};
+
 export default function ListView({ tasks, setTasks, loading, categories }: ListViewProps) {
-    const initialForm = { name: "", description: "", startDateTime: "", endDateTime: "", priority: "MEDIUM" as Task["priority"], categoryId: "" };
     const [form, setForm] = useState(initialForm);
+    const [formErrors, setFormErrors] = useState<FormErrors>({});
+    const [editErrors, setEditErrors] = useState<FormErrors>({});
 
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editForm, setEditForm] = useState<{
-        name: string;
-        description: string;
-        startDateTime: string;
-        endDateTime: string;
-        priority: Task["priority"];
-        categoryId: string;
-    }>({ name: "", description: "", startDateTime: "", endDateTime: "", priority: "MEDIUM", categoryId: "" });
+    const [editForm, setEditForm] = useState<TaskFormValues>({
+        name: "", 
+        description: "", 
+        startDateTime: "", 
+        endDateTime: "",
+        priority: "MEDIUM", 
+        categoryId: "", 
+        frequency: "",
+        interval: 1, 
+        byWeekday: [], 
+        recurrenceEnd: "",
+    });
 
     const [error, setError] = useState<string | null>(null);
-    
-    const priorityOptions = [
-        { value: "EXTRA_SMALL", label: "Extra Small", color: "bg-amber-500", border: "border-amber-700" },
-        { value: "SMALL",       label: "Small",       color: "bg-emerald-500", border: "border-emerald-700" },
-        { value: "MEDIUM",      label: "Medium",      color: "bg-teal-500", border: "border-teal-700" },
-        { value: "LARGE",       label: "Large",       color: "bg-rose-500", border: "border-rose-700" },
-        { value: "EXTRA_LARGE", label: "Extra Large", color: "bg-indigo-500", border: "border-indigo-700" },
-    ];
+
+    function validateTask(form: TaskFormValues): FormErrors {
+        const errors: FormErrors = {};
+        const isRecurring = !!form.frequency;
+
+        if (!form.name.trim()) errors.name = "Name is required.";
+        if (!form.startDateTime) errors.startDateTime = "Start date is required.";
+
+        if (!isRecurring) {
+            if (!form.endDateTime) errors.endDateTime = "End date is required.";
+            else if (form.startDateTime &&
+                new Date(form.startDateTime) >= new Date(form.endDateTime)) {
+                errors.endDateTime = "End must be after start.";
+            }
+        }
+
+        if (isRecurring) {
+            if (!Number.isInteger(form.interval) || form.interval < 1) {
+                errors.interval = "Repeat every must be a whole number of at least 1.";
+            }
+            if (form.frequency === "WEEKLY" && form.byWeekday.length === 0) {
+                errors.byWeekday = "Pick at least one weekday.";
+            }
+            if (form.recurrenceEnd && form.startDateTime &&
+                new Date(form.recurrenceEnd) < new Date(form.startDateTime)) {
+                errors.recurrenceEnd = "Repeat-until can't be before the start date.";
+            }
+        }
+        return errors;
+    }
 
     const startEdit = (task: Task) => {
         setEditingId(task.id)
@@ -44,32 +87,47 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
             endDateTime: task.endDateTime.slice(0, 16),
             priority: task.priority,
             categoryId: task.categoryId ?? "",
+            frequency: task.frequency ?? "",
+            interval: task.interval ?? 1,
+            byWeekday: task.byWeekday,
+            recurrenceEnd: task.recurrenceEnd ?? "",
         })
     }
 
+    const handleEditSubmit = (task: Task) => {
+        const errs = validateTask(editForm);
+        setEditErrors(errs);
+        if (Object.keys(errs).length > 0) return;
+        const payload: Partial<Task> = {
+            ...editForm,
+            endDateTime: editForm.frequency ? editForm.startDateTime : editForm.endDateTime,
+            frequency: editForm.frequency ? (editForm.frequency as Task["frequency"]) : null,
+            recurrenceEnd: editForm.recurrenceEnd || null,
+        };
+        handleUpdateTask(task, payload);
+        setEditingId(null);
+    };
+
+
     const handleAddTask = async () => {
-        setError(null);
+        const e = validateTask(form)
+        setFormErrors(e)
+        if (Object.keys(e).length > 0) return;
         try {
-            if (!form.name || !form.startDateTime || !form.endDateTime) {
-                setError("Please fill in all required fields.");
-                return;
-            }
-
-            if (new Date(form.startDateTime) >= new Date(form.endDateTime)) {
-                setError("Start date and time must be before end date and time.");
-                return;
-            }
-
+            const payload = {
+                ...form,
+                endDateTime: form.frequency ? form.startDateTime : form.endDateTime,
+            };
             const response = await fetch("/api/tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form)
+                body: JSON.stringify(payload)
             });
             if (response.ok) {
                 const newTask = await response.json();
-                setTasks([...tasks, newTask]);
+                setTasks(prev => [...prev, newTask]); 
                 setForm(initialForm)
-                setError(null);
+                setFormErrors({})
             } else {
                 setError("Failed to add task.");
             }
@@ -88,7 +146,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
             });
             if (response.ok) {
                 const updatedTask = await response.json();
-                setTasks(tasks.map(t => t.id === task.id ? updatedTask : t));
+                setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
             }
         } catch (error) {
             console.error("Error updating task:", error);
@@ -104,7 +162,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
             })
 
             if (response.ok) {
-                setTasks(tasks.filter(t => t.id !== task.id));
+                setTasks(prev => prev.filter(t => t.id !== task.id));
             }
         } catch (error) {
             console.error("Error deleting task:", error);
@@ -114,67 +172,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
 
     return (
         <div className="p-4 flex flex-col gap-4">
-            <form className="w-full flex justify-center">
-                <div className="flex flex-col gap-4 w-max">
-                    <div className="flex flex-row gap-2 w-full">
-                        <input
-                            type="text"
-                            placeholder="Task Name"
-                            value={form.name}
-                            onChange={(e) => setForm({...form, name: e.target.value})}
-                            className="border p-2 rounded w-full"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Description"
-                            value={form.description}
-                            onChange={(e) => setForm({...form, description: e.target.value})}
-                            className="border p-2 rounded w-full"
-                        />
-                    </div>
-                    <div className="flex flex-row gap-2 w-full">
-                        <input
-                            type="datetime-local"
-                            value={form.startDateTime}
-                            onChange={(e) => setForm({...form, startDateTime: e.target.value})}
-                            className="border p-2 rounded w-full"
-                        />
-                        <input
-                            type="datetime-local"
-                            value={form.endDateTime}
-                            onChange={(e) => setForm({...form, endDateTime: e.target.value})}
-                            className="border p-2 rounded w-full "
-                        />
-                    </div>
-                    <select
-                        value={form.categoryId}
-                        onChange={(e) => setForm({...form, categoryId: e.target.value})}
-                        className="border p-2 rounded w-full "
-                    >
-                        <option value="">Select Category</option>
-                        {categories.map(category => (
-                            <option key={category.id} value={category.id}>{category.name}</option>
-                        ))}
-                    </select>
-                    <select
-                        value={form.priority}
-                        onChange={(e) => setForm({...form, priority: e.target.value as Task["priority"]} )}
-                        className="border p-2 rounded w-full"
-                    >
-                        {priorityOptions.map(option => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="flex-1 mb-2 w-full">
-                        <button className="bg-blue-500 py-1.5 w-full text-white rounded" onClick={handleAddTask}>
-                            Submit
-                        </button>
-                        {error && <p className="text-red-500">{error}</p>}
-                    </div>
-                </div>
-            </form>
+            <TaskForm value={form} onChange={setForm} errors={formErrors} categories={categories} onSubmit={handleAddTask} submitLabel="Add task" />
             <div>
                 {loading ? (
                     <p>Loading tasks...</p>
@@ -187,58 +185,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
                             return (
                                 <div key={task.id} className="border p-4 rounded">
                                     {editingId === task.id ? (
-                                        <div>
-                                            <p>Editing task <span className="text-blue-500 font-semibold">{task.name.toUpperCase()}</span></p>
-                                            <input
-                                                type="text"
-                                                value={editForm.name}
-                                                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                                className="border p-2 rounded w-full"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={editForm.description}
-                                                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                                className="border p-2 rounded w-full"
-                                            />
-                                            <input
-                                                type="datetime-local"
-                                                value={editForm.startDateTime}
-                                                onChange={(e) => setEditForm({ ...editForm, startDateTime: e.target.value })}
-                                                className="border p-2 rounded w-full"
-                                            />
-                                            <input
-                                                type="datetime-local"
-                                                value={editForm.endDateTime}
-                                                onChange={(e) => setEditForm({ ...editForm, endDateTime: e.target.value })}
-                                                className="border p-2 rounded w-full "
-                                            />
-                                            <select
-                                                value={editForm.categoryId}
-                                                onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value })}
-                                                className="border p-2 rounded w-full "
-                                            >
-                                                <option value="">Select Category</option>
-                                                {categories.map(category => (
-                                                    <option key={category.id} value={category.id}>{category.name}</option>
-                                                ))}
-                                            </select>
-                                            <select
-                                                value={editForm.priority}
-                                                onChange={(e) => setEditForm({ ...editForm, priority: e.target.value as Task["priority"] })}
-                                                className="border p-2 rounded w-full"
-                                            >
-                                                {priorityOptions.map(option => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <button onClick={() => setEditingId(null)}>
-                                                Cancel
-                                            </button>
-                                            <button onClick={() => { handleUpdateTask(task, editForm); setEditingId(null); }}>Submit</button>
-                                        </div>
+                                        <TaskForm value={editForm} onChange={setEditForm} errors={editErrors} categories={categories} onSubmit={() => handleEditSubmit(task)} submitLabel="Save changes" onCancel={() => setEditingId(null)} />
                                     ) : (
                                         <div className="flex flex-col">
                                             <h2 className="text-xl font-bold">{task.name}</h2>
@@ -254,21 +201,21 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
                                                 <DynamicIcon name={task.category.icon as IconName} size={24} />
                                             )}
                                             <div className="">
-                                                <button className="p-2" onClick={() => handleUpdateTask(task, { completed: !task.completed })}>
+                                                <button type="button" className="p-2" onClick={() => handleUpdateTask(task, { completed: !task.completed })}>
                                                     {task.completed
                                                         ? <CircleCheck className="text-green-500" size={24} />
                                                         : <X className="text-red-500" size={24} />
                                                     }
                                                 </button>
-                                                <button className="p-2" onClick={() => handleUpdateTask(task, { favorite: !task.favorite })}>
+                                                <button type="button" className="p-2" onClick={() => handleUpdateTask(task, { favorite: !task.favorite })}>
                                                     <Heart className={`${task.favorite ? "fill-red-500" : "text-red-500 "}`} size={24} />
                                                 </button>
                                             </div>
                                             <div className="">
-                                                <button className="p-2" onClick={() => handleDeleteTask(task)}>
+                                                <button type="submit" className="p-2" onClick={() => handleDeleteTask(task)}>
                                                     <Trash size={24} />
                                                 </button>
-                                                <button className="p-2" onClick={() => startEdit(task)}>
+                                                <button type="button" className="p-2" onClick={() => startEdit(task)}>
                                                     <Pencil size={24} />
                                                 </button>
                                             </div>
