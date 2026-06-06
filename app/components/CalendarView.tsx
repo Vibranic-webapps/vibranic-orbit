@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Task } from "@/app/types";
+import { toast } from "sonner";
 
 interface CalendarViewProps {
     tasks: Task[];
@@ -49,6 +50,12 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
             return weeks % task.interval === 0;
         }
 
+        if (task.frequency === "MONTHLY") {
+            if (cell.getDate() !== start.getDate()) return false
+            const months = (cell.getFullYear() - start.getFullYear()) * 12
+                + (cell.getMonth() - start.getMonth());
+            return months % task.interval === 0;
+        }
 
         return false;
     }
@@ -75,12 +82,16 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
             });
             if (response.ok) {
                 const newTask = await response.json();
-                setTasks([...tasks, newTask]);
+                setTasks(prev => [...prev, newTask]);
                 setNewTaskName("");
                 setSelectedDate(null);
+                toast.success("Task added successfully")
+            } else {
+                toast.error("Failed to add task.");
             }
         } catch(error) {
-            console.error("Error adding task:", error)
+            console.error("Error adding task:", error);
+            toast.error("Error adding task");
         }
     }
 

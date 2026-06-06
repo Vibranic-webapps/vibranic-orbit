@@ -5,6 +5,7 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Task, Category, TaskFormValues, FormErrors } from "@/app/types";
 import { priorityOptions } from "@/app/constants"
 import TaskForm from "./TaskForm";
+import { toast } from "sonner";
 
 
 interface ListViewProps {
@@ -45,8 +46,6 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
         byWeekday: [], 
         recurrenceEnd: "",
     });
-
-    const [error, setError] = useState<string | null>(null);
 
     function validateTask(form: TaskFormValues): FormErrors {
         const errors: FormErrors = {};
@@ -90,7 +89,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
             frequency: task.frequency ?? "",
             interval: task.interval ?? 1,
             byWeekday: task.byWeekday,
-            recurrenceEnd: task.recurrenceEnd ?? "",
+            recurrenceEnd: task.recurrenceEnd ? task.recurrenceEnd.slice(0, 10) : "",
         })
     }
 
@@ -105,6 +104,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
             recurrenceEnd: editForm.recurrenceEnd || null,
         };
         handleUpdateTask(task, payload);
+        toast.success("Task updated successfully");
         setEditingId(null);
     };
 
@@ -128,12 +128,13 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
                 setTasks(prev => [...prev, newTask]); 
                 setForm(initialForm)
                 setFormErrors({})
+                toast.success("Task added successfully")
             } else {
-                setError("Failed to add task.");
+                toast.error("Failed to add task.");
             }
         } catch (error) {
             console.error("Error adding task:", error);
-            setError("Failed to add task.");
+            toast.error("Error adding task")
         }
     };
 
@@ -147,10 +148,13 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
             if (response.ok) {
                 const updatedTask = await response.json();
                 setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
+            } else {
+                toast.error("Failed to update task.");
             }
         } catch (error) {
             console.error("Error updating task:", error);
-            setError("Failed to update task.");
+            toast.error("Error updating task")
+            
         }
     }
 
@@ -163,10 +167,13 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
 
             if (response.ok) {
                 setTasks(prev => prev.filter(t => t.id !== task.id));
+                toast.success("Task deleted successfully");
+            } else {
+                toast.error("Failed to delete task.");
             }
         } catch (error) {
             console.error("Error deleting task:", error);
-            setError("Failed to delete task.");
+            toast.error("Error deleting task")
         }
     }
 

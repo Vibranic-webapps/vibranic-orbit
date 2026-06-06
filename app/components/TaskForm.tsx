@@ -54,7 +54,7 @@ export default function TaskForm({ value, onChange, errors, categories, onSubmit
                             onChange={(e) => onChange({ ...value, name: e.target.value })}
                             className="border p-2 rounded w-full" />
                     </Field>
-                    <Field label="Description" htmlFor="description" error={errors.description}>
+                    <Field label="Description" htmlFor="description">
                         <input id="description" type="text" placeholder="description" 
                             value={value.description}
                             onChange={(e) => onChange({ ...value, description: e.target.value })}
@@ -80,7 +80,7 @@ export default function TaskForm({ value, onChange, errors, categories, onSubmit
                         </Field>
                     )}
                 </div>
-                <Field label="Category" htmlFor="category" error={errors.categoryId}>
+                <Field label="Category" htmlFor="category">
                 <select id="category" value={value.categoryId}
                         onChange={(e) => onChange({ ...value, categoryId: e.target.value })}
                         className="border p-2 rounded w-full">
@@ -125,6 +125,23 @@ export default function TaskForm({ value, onChange, errors, categories, onSubmit
                         {errors.byWeekday && <p className="text-red-500 text-sm">{errors.byWeekday}</p>}
                     </div>
                 )}
+                {value.frequency && (
+                    <Field label="Repeat every" htmlFor="interval" error={errors.interval}>
+                        <input id="interval" type="number" min={1}
+                            value={value.interval}
+                            onChange={(e) => onChange({ ...value, interval: Number(e.target.value) })}
+                            className="border p-2 rounded w-full" />
+                    </Field>
+                )}
+                {value.frequency && (
+                    <Field label="Repeat until" htmlFor="recurrenceEnd" error={errors.recurrenceEnd}>
+                        <input id="recurrenceEnd" type="date"
+                            value={value.recurrenceEnd}
+                            onChange={(e) => onChange({ ...value, recurrenceEnd: e.target.value })}
+                            className="border p-2 rounded w-full" />
+                    </Field>
+                )}
+
                 {onCancel && <button type="button" onClick={onCancel}>Cancel</button>}
                 <button type="submit" className="bg-blue-500 py-1.5 w-full text-white rounded">
                     {submitLabel}
