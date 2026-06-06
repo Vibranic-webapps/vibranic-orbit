@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Task } from "@/app/types";
+import { toast } from "sonner";
 
 interface CalendarViewProps {
     tasks: Task[];
@@ -25,11 +26,41 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
 
     const atMidnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-    const tasksForDay = (cellDate: Date) => tasks.filter(task => {
+    function occursOn(task: Task, cell: Date): boolean {
         const start = atMidnight(new Date(task.startDateTime));
-        const end = atMidnight(new Date(task.endDateTime));
-        return cellDate >= start && cellDate <= end;
-    });
+
+        if (cell < start) return false;
+        if (task.recurrenceEnd && cell > atMidnight(new Date(task.recurrenceEnd))) {
+            return false;
+        }
+
+        if (!task.frequency) {
+            return cell <= atMidnight(new Date(task.endDateTime));
+        }
+
+        if (task.frequency === "DAILY") {
+            const days = Math.round((cell.getTime() - start.getTime()) / 86400000);
+            return days % task.interval === 0;
+        }
+
+        if (task.frequency === "WEEKLY") {
+            const weekdays = task.byWeekday.length ? task.byWeekday : [start.getDay()];
+            if (!weekdays.includes(cell.getDay())) return false;
+            const weeks = Math.floor((cell.getTime() - start.getTime()) / (7 * 86400000));
+            return weeks % task.interval === 0;
+        }
+
+        if (task.frequency === "MONTHLY") {
+            if (cell.getDate() !== start.getDate()) return false
+            const months = (cell.getFullYear() - start.getFullYear()) * 12
+                + (cell.getMonth() - start.getMonth());
+            return months % task.interval === 0;
+        }
+
+        return false;
+    }
+
+    const tasksForDay = (cell: Date) => tasks.filter(t => occursOn(t, cell));
 
     const goToPrevMonth = () => setViewDate(new Date(year, month - 1, 1));
     const goToNextMonth = () => setViewDate(new Date(year, month + 1, 1));
@@ -51,12 +82,16 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
             });
             if (response.ok) {
                 const newTask = await response.json();
-                setTasks([...tasks, newTask]);
+                setTasks(prev => [...prev, newTask]);
                 setNewTaskName("");
                 setSelectedDate(null);
+                toast.success("Task added successfully")
+            } else {
+                toast.error("Failed to add task.");
             }
         } catch(error) {
-            console.error("Error adding task:", error)
+            console.error("Error adding task:", error);
+            toast.error("Error adding task");
         }
     }
 

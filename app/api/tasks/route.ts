@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
         if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await request.json();
-        const { name, description, startDateTime, endDateTime, priority, categoryId } = body;
+        const { name, description, startDateTime, endDateTime, priority, categoryId,
+        frequency, interval, byWeekday, recurrenceEnd } = body;
+
 
         if (!name || !startDateTime || !endDateTime) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -38,7 +40,11 @@ export async function POST(request: NextRequest) {
                 endDateTime: endDate,
                 priority,
                 categoryId: categoryId || null,
-                userId
+                userId,
+                frequency: frequency || null,
+                interval: interval || 1,
+                byWeekday: byWeekday || [],
+                recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
             },
             include: { category: true }
         });

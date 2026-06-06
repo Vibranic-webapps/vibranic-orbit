@@ -17,6 +17,10 @@ export interface Task {
     favorite: boolean;
     categoryId?: string;
     userId: string;
+    frequency: "DAILY" | "WEEKLY" | "MONTHLY" | null;
+    interval: number;
+    byWeekday: number[];
+    recurrenceEnd: string | null;
     category?: { 
         id: string; 
         name: string; 
@@ -24,3 +28,17 @@ export interface Task {
         icon: string 
     } | null;
 }
+
+export type TaskFormValues = {
+    name: string;
+    description: string;
+    startDateTime: string;
+    endDateTime: string;
+    priority: Task["priority"];
+    categoryId: string;
+    frequency: string;
+    interval: number;
+    byWeekday: number[];
+    recurrenceEnd: string;
+};
+export type FormErrors = Partial<Record<keyof TaskFormValues, string>>;
