@@ -1,0 +1,23 @@
+#!/bin/sh
+# Block direct pushes to protected branches — use a feature branch + PR instead.
+# This hook is version-controlled; `npm install` wires it up via core.hooksPath.
+protected="main"
+
+while read -r local_ref local_sha remote_ref remote_sha
+do
+  case "$remote_ref" in
+    refs/heads/$protected)
+      echo ""
+      echo "  Direct push to '$protected' is BLOCKED."
+      echo "  Workflow: branch off main, commit, open a PR, squash-merge."
+      echo ""
+      echo "    git switch -c feature/your-thing"
+      echo ""
+      echo "  (Real emergency override: git push --no-verify)"
+      echo ""
+      exit 1
+      ;;
+  esac
+done
+
+exit 0
