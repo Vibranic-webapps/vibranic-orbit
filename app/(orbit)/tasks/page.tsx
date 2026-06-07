@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import { useTasks } from "../hooks/useTasks";
-import { useCategories } from "../hooks/useCategories";
-import ListView from "../components/ListView";
-import CalendarView from "../components/CalendarView";
+import { useTasks } from "@/app/hooks/useTasks";
+import { useCategories } from "@/app/hooks/useCategories";
+import ListView from "@/app/components/ListView";
+import CalendarView from "@/app/components/CalendarView";
 
 export default function TasksPage() {
     const { tasks, setTasks, loading } = useTasks();
