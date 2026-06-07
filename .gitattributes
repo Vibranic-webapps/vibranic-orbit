@@ -1,0 +1,2 @@
+# Shell hooks must keep LF line endings so they run on all platforms
+.githooks/** text eol=lf
