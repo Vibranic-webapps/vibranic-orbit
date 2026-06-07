@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { IconPicker } from "@/components/IconPicker";
-import { useCategories } from "../hooks/useCategories";
+import { useCategories } from "@/app/hooks/useCategories";
 
 
 export default function CategoriesPage() {
