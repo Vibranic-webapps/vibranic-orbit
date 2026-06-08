@@ -7,7 +7,7 @@ const BAND_SIZE = {
 }
 
 
-export default function Ring({ band, tasks, offset }: { band: keyof typeof BAND_SIZE; tasks: { id: string; band: string }[]; offset: number }) {
+export default function Ring({ band, tasks, offset }: { band: keyof typeof BAND_SIZE; tasks: { id: string; band: string, color: string }[]; offset: number }) {
     const size = BAND_SIZE[band]
     const ringTasks = tasks.filter((t) => t.band === band)
     return (
@@ -23,10 +23,11 @@ export default function Ring({ band, tasks, offset }: { band: keyof typeof BAND_
                 return (
                         <div
                         key={task.id}
-                        className="absolute w-[8%] h-[8%] rounded-full bg-[radial-gradient(circle_at_35%_35%,#7DF9C4_0%,#34D399_45%,rgba(52,211,153,0.15)_100%)] 
-                            shadow-[0_0_12px_rgba(52,211,153,0.7),0_0_24px_rgba(52,211,153,0.4)]
+                        className="absolute w-[8%] h-[8%] rounded-full 
+                            bg-[radial-gradient(circle_at_35%_35%,color-mix(in_srgb,var(--c)_85%,white)_0%,var(--c)_45%,transparent_100%)]
+                            shadow-[0_0_12px_var(--c),0_0_24px_color-mix(in_srgb,var(--c)_50%,transparent)]
                             transform-[translate(-50%,-50%)_rotateX(-55deg)]"
-                        style={{ top: `${top}%`, left: `${left}%` }}
+                            style={{ top: `${top}%`, left: `${left}%`, ["--c" as string]: task.color } as React.CSSProperties}
                         />
                     )
             })}
