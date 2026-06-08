@@ -23,3 +23,16 @@ body {
   background: var(--void);
   color: var(--text-primary);
 }
+
+@keyframes orbit-spin {
+  to { transform: rotateZ(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-spinner { animation: none !important; }
+}
+
+@keyframes orbit-counter {
+  from { transform: translate(-50%, -50%) rotateZ(0deg)    rotateX(-55deg); }
+  to   { transform: translate(-50%, -50%) rotateZ(-360deg) rotateX(-55deg); }
+}
