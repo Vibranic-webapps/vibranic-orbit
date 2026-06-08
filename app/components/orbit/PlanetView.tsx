@@ -1,9 +1,31 @@
 "use client";
+
+import { useEffect } from "react";
 import { useTasks } from "@/app/hooks/useTasks";
 import Ring from "@/app/components/orbit/Ring"
+import { useAnimate, useReducedMotion } from "motion/react";
+import { useRouter } from "next/navigation"
+import { useRef } from "react"
 
 export default function PlanetView() {
     const { tasks } = useTasks()
+    const [scope, animate] = useAnimate()
+    const router = useRouter()
+    const tintRef = useRef(null)
+    const reduce = useReducedMotion()
+
+    async function descend() {
+        if (!reduce) {
+            animate(scope.current, { 
+                scale: 4, 
+                y: 30, 
+                filter: "blur(12px)", 
+                opacity: 0 
+            }, { duration: 0.45, ease: "easeIn" })
+        }
+        await animate(tintRef.current, { opacity: 1 }, { duration: reduce ? 0.2 : 0.45, ease: "easeIn" })
+        router.push("/tasks")
+    }
 
     function orbitBand(endDateTime: string): "crashing" | "inner" | "mid" | "outer" | "belt" {
         const startOfToday = new Date()
@@ -30,15 +52,18 @@ export default function PlanetView() {
             priority: t.priority,
     }))
 
+    useEffect(() => { router.prefetch("/tasks") }, [router])
+
     return (
         <div className="grid place-items-center h-screen pb-40">
-            <div className="w-[80vmin] h-[80vmin] grid place-items-center perspective-[70vmin]">
+            <div ref={tintRef} className="fixed inset-0 bg-black opacity-0 pointer-events-none z-50" />
+            <div ref={scope} className="w-[80vmin] h-[80vmin] grid place-items-center perspective-[70vmin]">
                 <Ring band="crashing" tasks={bodies} offset={0} />
                 <Ring band="inner" tasks={bodies} offset={40} />
                 <Ring band="mid" tasks={bodies} offset={80} />
                 <Ring band="outer" tasks={bodies} offset={120} />
                 <Ring band="belt" tasks={bodies} offset={160} />
-
+                <button onClick={descend} className="absolute top-4 left-4 z-50 text-white">Descend</button>
                 <div className="
                     w-[14%] h-[14%] 
                     rounded-full 
