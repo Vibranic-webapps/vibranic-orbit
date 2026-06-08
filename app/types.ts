@@ -43,5 +43,3 @@ export type TaskFormValues = {
 };
 
 export type FormErrors = Partial<Record<keyof TaskFormValues, string>>;
-
-export type Priority = "high" | "medium" | "low"

@@ -1,4 +1,4 @@
-import { Priority } from "@/app/types";
+import { Task } from "@/app/types";
 
 const BAND_SIZE = {
     crashing: 40,
@@ -10,9 +10,16 @@ const BAND_SIZE = {
 
 const BAND_DURATION = { crashing: 50, inner: 70, mid: 110, outer: 170, belt: 240 }
 
-const PRIORITY_SIZE = { high: 5, medium: 3.5, low: 2.5 }
+const PRIORITY_SIZE = {
+    EXTRA_SMALL: 2.5,
+    SMALL:       3.5,
+    MEDIUM:      4.5,
+    LARGE:       5.5,
+    EXTRA_LARGE: 6.5,
+}
 
-export default function Ring({ band, tasks, offset, }: { band: keyof typeof BAND_SIZE; tasks: { id: string; band: string, color: string, priority: Priority }[]; offset: number }) {
+
+export default function Ring({ band, tasks, offset, }: { band: keyof typeof BAND_SIZE; tasks: { id: string; band: string, color: string, priority: Task["priority"] }[]; offset: number }) {
     const size = BAND_SIZE[band]
     const ringTasks = tasks.filter((t) => t.band === band)
     return (
