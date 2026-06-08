@@ -2,7 +2,7 @@
 import { useTasks } from "@/app/hooks/useTasks";
 import Ring from "@/app/components/orbit/Ring"
 
-export default function PlanetPage() {
+export default function PlanetView() {
     const { tasks } = useTasks()
 
     function orbitBand(endDateTime: string): "crashing" | "inner" | "mid" | "outer" | "belt" {
@@ -29,7 +29,6 @@ export default function PlanetPage() {
             color: t.category?.color ?? "#7C6CFF",
             priority: t.priority,
     }))
-
 
     return (
         <div className="grid place-items-center h-screen pb-40">

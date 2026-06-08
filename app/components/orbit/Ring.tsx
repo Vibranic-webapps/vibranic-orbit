@@ -18,7 +18,6 @@ const PRIORITY_SIZE = {
     EXTRA_LARGE: 6.5,
 }
 
-
 export default function Ring({ band, tasks, offset, }: { band: keyof typeof BAND_SIZE; tasks: { id: string; band: string, color: string, priority: Task["priority"] }[]; offset: number }) {
     const size = BAND_SIZE[band]
     const ringTasks = tasks.filter((t) => t.band === band)
