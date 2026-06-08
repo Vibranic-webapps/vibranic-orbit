@@ -2,14 +2,12 @@ import Ring from "@/app/components/orbit/Ring"
 
 export default function PlanetPage() {
     const tasks = [
-        { id: "a", band: "inner" },
-        { id: "b", band: "mid" },
-        { id: "c", band: "mid" },
-        { id: "d", band: "outer" },
-        { id: "e", band: "belt" },
+        { id: "a", band: "inner", color: "#34D399" },
+        { id: "b", band: "mid",   color: "#F59E0B" },
+        { id: "c", band: "mid",   color: "#60A5FA" },
+        { id: "d", band: "outer", color: "#F472B6" },
+        { id: "e", band: "belt",  color: "#A78BFA" },
     ]
-
-    
     return (
         <div className="grid place-items-center h-screen pb-40">
             <div className="w-[80vmin] h-[80vmin] grid place-items-center perspective-[70vmin]">
