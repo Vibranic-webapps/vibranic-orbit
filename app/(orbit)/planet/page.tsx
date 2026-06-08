@@ -1,12 +1,24 @@
+import Ring from "@/app/components/orbit/Ring"
+
 export default function PlanetPage() {
+    const tasks = [
+        { id: "a", band: "inner" },
+        { id: "b", band: "mid" },
+        { id: "c", band: "mid" },
+        { id: "d", band: "outer" },
+        { id: "e", band: "belt" },
+    ]
+
+    
     return (
-        <div className="grid place-items-center h-screen">
+        <div className="grid place-items-center h-screen pb-40">
             <div className="w-[80vmin] h-[80vmin] grid place-items-center perspective-[70vmin]">
-                <div className="[grid-area:1/1] w-[40%] h-[40%] rounded-full border border-white/10 transform-[rotateX(55deg)]"></div>
-                <div className="[grid-area:1/1] w-[55%] h-[55%] rounded-full border border-white/10 transform-[rotateX(55deg)]"></div>
-                <div className="[grid-area:1/1] w-[70%] h-[70%] rounded-full border border-white/10 transform-[rotateX(55deg)]"></div>
-                <div className="[grid-area:1/1] w-[85%] h-[85%] rounded-full border border-white/10 transform-[rotateX(55deg)]"></div>
-                <div className="[grid-area:1/1] w-full h-full rounded-full border border-white/10 transform-[rotateX(55deg)]"></div>
+                <Ring band="crashing" tasks={tasks} offset={0} />
+                <Ring band="inner"    tasks={tasks} offset={40} />
+                <Ring band="mid"      tasks={tasks} offset={80} />
+                <Ring band="outer"    tasks={tasks} offset={120} />
+                <Ring band="belt"     tasks={tasks} offset={160} />
+
                 <div className="
                     w-[14%] h-[14%] 
                     rounded-full 
