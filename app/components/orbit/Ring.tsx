@@ -20,7 +20,7 @@ export default function Ring({ band, tasks, offset, }: { band: keyof typeof BAND
             className="[grid-area:1/1] relative rounded-full border border-white/10 transform-3d transform-[rotateX(40deg)]" 
             style={{ width: `${size}%`, height: `${size}%` }}
         >
-            <div className="absolute inset-0 transform-3d" style={{ animation: `orbit-spin ${BAND_DURATION[band]}s linear infinite` }}>
+            <div className="orbit-spinner absolute inset-0 transform-3d" style={{ animation: `orbit-spin ${BAND_DURATION[band]}s linear infinite` }}>
                 {ringTasks.map((task, index) => {
                     const angle = (index / ringTasks.length) * 360 + offset
                     const rad = angle * (Math.PI / 180)
