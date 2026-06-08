@@ -34,7 +34,12 @@ export default function Ring({ band, tasks, offset, }: { band: keyof typeof BAND
                             shadow-[0_0_12px_var(--c),0_0_24px_color-mix(in_srgb,var(--c)_50%,transparent)]
                             transform-[translate(-50%,-50%)]
                         "
-                            style={{ width: `${PRIORITY_SIZE[task.priority]}vmin`, height: `${PRIORITY_SIZE[task.priority]}vmin`, top: `${top}%`, left: `${left}%`, ["--c" as string]: task.color } as React.CSSProperties}
+                            style={{ 
+                                width: `${PRIORITY_SIZE[task.priority]}vmin`, 
+                                height: `${PRIORITY_SIZE[task.priority]}vmin`, 
+                                top: `${top}%`, left: `${left}%`, 
+                                ["--c" as string]: task.color 
+                            } as React.CSSProperties}
                         />
                     )
                 })}
