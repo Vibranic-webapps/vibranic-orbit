@@ -1,5 +1,5 @@
-export default function OrbitPage() {
-    return (
-        <h1 className="text-(--text-primary) p-10">Planet</h1>
-    )
+import PlanetView from "@/app/components/orbit/PlanetView"
+
+export default function Page() {
+    return <PlanetView />
 }
