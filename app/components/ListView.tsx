@@ -82,8 +82,8 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
         setEditForm({
             name: task.name,
             description: task.description ?? "",
-            startDateTime: task.startDateTime.slice(0, 16),
-            endDateTime: task.endDateTime.slice(0, 16),
+            startDateTime: task.startDateTime?.slice(0, 16) ?? "",
+            endDateTime: task.endDateTime?.slice(0, 16) ?? "",
             priority: task.priority,
             categoryId: task.categoryId ?? "",
             frequency: task.frequency ?? "",
@@ -187,7 +187,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
                     <p>No tasks found.</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {tasks.map(task => {
+                        {tasks.filter(t => t.startDateTime !== null).map(task => {
                             const priorityOption = priorityOptions.find(o => o.value === task.priority);
                             return (
                                 <div key={task.id} className="border p-4 rounded">
@@ -198,8 +198,8 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
                                             <h2 className="text-xl font-bold">{task.name}</h2>
                                             <p>{task.description || "No description available."}</p>
                                             <div className="flex">
-                                                <p>Start: {new Date(task.startDateTime).toLocaleString()}</p>
-                                                <p>End: {new Date(task.endDateTime).toLocaleString()}</p>
+                                                <p>Start: {task.startDateTime ? new Date(task.startDateTime).toLocaleString() : "—"}</p>
+                                                <p>End: {task.endDateTime ? new Date(task.endDateTime).toLocaleString() : "—"}</p>
                                             </div>
                                             <p className={`border-2 rounded-md w-fit px-2.5 py-0.5 text-xs text-white ${priorityOption?.border} ${priorityOption?.color}`}>
                                                 {task.priority}

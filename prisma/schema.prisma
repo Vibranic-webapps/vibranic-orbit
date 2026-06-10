@@ -41,8 +41,8 @@ model Task {
   userId         String
   name           String
   description    String?
-  startDateTime  DateTime
-  endDateTime    DateTime
+  startDateTime  DateTime?
+  endDateTime    DateTime?
   priority       Priority                @default(MEDIUM)
   completed      Boolean                 @default(false)
   favorite       Boolean                 @default(false)

@@ -25,19 +25,16 @@ export async function POST(request: NextRequest) {
         frequency, interval, byWeekday, recurrenceEnd } = body;
 
 
-        if (!name || !startDateTime || !endDateTime) {
+        if (!name) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
-
-        const startDate = new Date(startDateTime);
-        const endDate = new Date(endDateTime);
 
         const newTask = await prisma.task.create({
             data: {
                 name,
                 description,
-                startDateTime: startDate,
-                endDateTime: endDate,
+                startDateTime: startDateTime ? new Date(startDateTime) : null,
+                endDateTime: endDateTime ? new Date(endDateTime) : null,
                 priority,
                 categoryId: categoryId || null,
                 userId,
