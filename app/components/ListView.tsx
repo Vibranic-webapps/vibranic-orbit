@@ -205,7 +205,9 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
                                                 {task.priority}
                                             </p>
                                             {task.category?.icon && (
-                                                <DynamicIcon name={task.category.icon as IconName} size={24} />
+                                                <div className="p-2">
+                                                    <DynamicIcon color={task.category.color} name={task.category.icon as IconName} size={24} />
+                                                </div>
                                             )}
                                             <div className="">
                                                 <button type="button" className="p-2" onClick={() => handleUpdateTask(task, { completed: !task.completed })}>

@@ -1,0 +1,10 @@
+IDEAS:
+1. make the hover cards switch position from right to left based on the position of the ball on the ring.
+2. show a preview of the ball in the tasks page when creating a new task.
+
+FIXES:
+    FEATURE:
+        1. overlapping of balls on the rings when size/priority is too big.
+        2. make the descent move up higher so it feels like you are actually landing on the planet noet going straigt into the planet
+    DESIGN:
+        1. make the hover cards feel like they belong on the planet view not just a basic card floating in space.

@@ -9,7 +9,7 @@ export default function AscentShell({ children }: { children: React.ReactNode })
     const router = useRouter()
     const reduce = useReducedMotion()
 
-    useEffect(() => { router.prefetch("/planet") }, [router])
+    useEffect(() => { router.prefetch("/") }, [router])
 
     async function ascend() {
         if (!reduce) {
@@ -20,7 +20,7 @@ export default function AscentShell({ children }: { children: React.ReactNode })
             }, { duration: 0.45, ease: "easeIn" })
         }
         await animate(tintRef.current, { opacity: 1 }, { duration: reduce ? 0.2 : 0.45, ease: "easeIn" })
-        router.push("/planet")
+        router.push("/")
     }
 
     return (

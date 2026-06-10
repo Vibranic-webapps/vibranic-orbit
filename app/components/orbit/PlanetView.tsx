@@ -126,7 +126,7 @@ export default function PlanetView() {
                 <Ring band="outer" tasks={bodies} offset={120} onHover={handleHover} onLeave={handleLeave} />
                 <Ring band="belt" tasks={bodies} offset={160} onHover={handleHover} onLeave={handleLeave} />
                 <button onClick={descend} className="absolute top-4 left-4 z-50 text-white">Descend</button>
-                <div className="w-[14%] h-[14%] rounded-full bg-[radial-gradient(circle_at_35%_35%,#A99BFF_0%,#7C6CFF_45%,rgba(124,108,255,0.15)_100%)] shadow-[0_0_40px_rgba(124,108,255,0.7),0_0_80px_rgba(124,108,255,0.45),0_0_140px_rgba(124,108,255,0.25)] [grid-area:1/1]"></div>
+                <div className="w-[15%] h-[15%] rounded-full bg-[radial-gradient(circle_at_35%_35%,#A99BFF_0%,#7C6CFF_45%,rgba(124,108,255,0.15)_100%)] shadow-[0_0_40px_rgba(124,108,255,0.7),0_0_80px_rgba(124,108,255,0.45),0_0_140px_rgba(124,108,255,0.25)] [grid-area:1/1]"></div>
             </div>
         </div>
     )
