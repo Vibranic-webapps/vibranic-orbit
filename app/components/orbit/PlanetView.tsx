@@ -11,7 +11,7 @@ export default function PlanetView() {
     const { tasks } = useTasks()
     const [scope, animate] = useAnimate()
     const router = useRouter()
-    const tintRef = useRef(null)
+    const tintRef = useRef<HTMLDivElement>(null)
     const reduce = useReducedMotion()
 
     const [hovered, setHovered] = useState<PlanetBody | null>(null)
@@ -20,6 +20,7 @@ export default function PlanetView() {
     const panelRef = useRef<HTMLDivElement>(null)
     const hoveredEl = useRef<HTMLElement | null>(null)
     const lineRef = useRef<SVGLineElement>(null)
+
 
     function handleHover(task: PlanetBody, el: HTMLElement) {
         setHovered(task)
@@ -39,6 +40,8 @@ export default function PlanetView() {
         await animate(tintRef.current, { opacity: 1 }, { duration: reduce ? 0.2 : 0.45, ease: "easeIn" })
         router.push("/tasks")
     }
+
+
 
     function orbitBand(endDateTime: string): "crashing" | "inner" | "mid" | "outer" | "belt" {
         const startOfToday = new Date()
@@ -120,13 +123,22 @@ export default function PlanetView() {
 
             <div ref={tintRef} className="fixed inset-0 bg-black opacity-0 pointer-events-none z-50" />
             <div ref={scope} className="w-[80vmin] h-[80vmin] grid place-items-center perspective-[70vmin]">
-                <Ring band="crashing" tasks={bodies} offset={0} onHover={handleHover} onLeave={handleLeave} />
-                <Ring band="inner" tasks={bodies} offset={40} onHover={handleHover} onLeave={handleLeave} />
-                <Ring band="mid" tasks={bodies} offset={80} onHover={handleHover} onLeave={handleLeave} />
-                <Ring band="outer" tasks={bodies} offset={120} onHover={handleHover} onLeave={handleLeave} />
-                <Ring band="belt" tasks={bodies} offset={160} onHover={handleHover} onLeave={handleLeave} />
-                <button onClick={descend} className="absolute top-4 left-4 z-50 text-white">Descend</button>
-                <div className="w-[15%] h-[15%] rounded-full bg-[radial-gradient(circle_at_35%_35%,#A99BFF_0%,#7C6CFF_45%,rgba(124,108,255,0.15)_100%)] shadow-[0_0_40px_rgba(124,108,255,0.7),0_0_80px_rgba(124,108,255,0.45),0_0_140px_rgba(124,108,255,0.25)] [grid-area:1/1]"></div>
+                <Ring band="crashing" tasks={bodies} offset={0} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="inner" tasks={bodies} offset={40} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="mid" tasks={bodies} offset={80} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="outer" tasks={bodies} offset={120} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="belt" tasks={bodies} offset={160} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <div 
+                    onClick={() => descend()}
+                    className="
+                        w-[15%] h-[15%] 
+                        rounded-full
+                        cursor-pointer
+                        [grid-area:1/1]
+                        bg-[radial-gradient(circle_at_35%_35%,#A99BFF_0%,#7C6CFF_45%,rgba(124,108,255,0.15)_100%)] 
+                        shadow-[0_0_40px_rgba(124,108,255,0.7),0_0_80px_rgba(124,108,255,0.45),0_0_140px_rgba(124,108,255,0.25)] 
+                    "
+                ></div>
             </div>
         </div>
     )

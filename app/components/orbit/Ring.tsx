@@ -4,12 +4,13 @@ const BAND_SIZE = { crashing: 40, inner: 55, mid: 70, outer: 85, belt: 100 }
 const BAND_DURATION = { crashing: 50, inner: 70, mid: 110, outer: 170, belt: 240 }
 const PRIORITY_SIZE = { EXTRA_SMALL: 2.5, SMALL: 3.5, MEDIUM: 4.5, LARGE: 5.5, EXTRA_LARGE: 6.5 }
 
-export default function Ring({ band, tasks, offset, onHover, onLeave }: {
+export default function Ring({ band, tasks, offset, onHover, onLeave, onClick }: {
     band: keyof typeof BAND_SIZE;
     tasks: PlanetBody[];
     offset: number;
     onHover: (task: PlanetBody, el: HTMLElement) => void;
     onLeave: () => void;
+    onClick: (task: PlanetBody) => void;
 }) {
     const size = BAND_SIZE[band]
     const ringTasks = tasks.filter((t) => t.band === band)
@@ -27,6 +28,7 @@ export default function Ring({ band, tasks, offset, onHover, onLeave }: {
                     return (
                         <div
                             key={task.id}
+                            onClick={() => onClick(task)}
                             className="absolute rounded-full pointer-events-auto bg-[radial-gradient(circle_at_35%_35%,color-mix(in_srgb,var(--c)_85%,white)_0%,var(--c)_45%,color-mix(in_srgb,var(--c),black_45%)_100%)] shadow-[0_0_12px_var(--c),0_0_24px_color-mix(in_srgb,var(--c)_50%,transparent)] transform-[translate(-50%,-50%)]"
                             style={{
                                 width: `${PRIORITY_SIZE[task.priority]}vmin`,
