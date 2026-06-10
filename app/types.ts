@@ -10,8 +10,8 @@ export interface Task {
     id: string;
     name: string;
     description?: string;
-    startDateTime: string;
-    endDateTime: string;
+    startDateTime: string | null;
+    endDateTime: string | null;
     priority: "EXTRA_SMALL" | "SMALL" | "MEDIUM" | "LARGE" | "EXTRA_LARGE";
     completed: boolean;
     favorite: boolean;

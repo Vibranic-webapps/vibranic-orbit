@@ -27,6 +27,7 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
     const atMidnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
     function occursOn(task: Task, cell: Date): boolean {
+        if (!task.startDateTime || !task.endDateTime) return false;
         const start = atMidnight(new Date(task.startDateTime));
 
         if (cell < start) return false;

@@ -5,7 +5,7 @@ import { useTasks } from "@/app/hooks/useTasks";
 import Ring from "@/app/components/orbit/Ring"
 import { useAnimate, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation"
-import { PlanetBody } from "@/app/types";
+import { PlanetBody, Task } from "@/app/types";
 
 export default function PlanetView() {
     const { tasks } = useTasks()
@@ -57,7 +57,7 @@ export default function PlanetView() {
     }
 
     const bodies = tasks
-        .filter((t) => !t.completed)
+        .filter((t): t is Task & { endDateTime: string } => !t.completed && t.endDateTime !== null)
         .map((t): PlanetBody => ({
             id: t.id,
             band: orbitBand(t.endDateTime),
