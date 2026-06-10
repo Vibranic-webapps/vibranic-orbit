@@ -31,7 +31,6 @@ export default function Ring({ band, tasks, offset, onHover, onLeave }: {
                             style={{
                                 width: `${PRIORITY_SIZE[task.priority]}vmin`,
                                 height: `${PRIORITY_SIZE[task.priority]}vmin`,
-                                color: ``,
                                 top: `${top}%`, left: `${left}%`,
                                 ["--c" as string]: task.color
                             } as React.CSSProperties}
