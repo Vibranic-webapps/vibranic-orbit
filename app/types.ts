@@ -49,6 +49,7 @@ export type PlanetBody = {
     band: string;
     color: string;
     priority: Task["priority"];
+    size: number;
     name: string;
     description: string | null
     due: string;

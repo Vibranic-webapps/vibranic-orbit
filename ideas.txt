@@ -1,0 +1,7 @@
+ideas:
+
+1. add a text on + uitleg op de planet view, title on the planet. the planet to show the action. and on the task balls.
+2. redesign the card information on hover. and stop the rotate animation.
+3. move the perspective on the zoom on Descent up
+4. when adding a new task go to calendar view on the day that was selected.
+5. only show the tasks that are due today.
