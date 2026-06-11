@@ -22,6 +22,17 @@ export default function PlanetView() {
     const lineRef = useRef<SVGLineElement>(null)
 
 
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const PRIORITY_BAND = {
+        EXTRA_SMALL: "belt",
+        SMALL: "outer",
+        MEDIUM: "mid",
+        LARGE: "inner",
+        EXTRA_LARGE: "crashing",
+    } as const
+
     function handleHover(task: PlanetBody, el: HTMLElement) {
         setHovered(task)
         hoveredEl.current = el
@@ -40,34 +51,28 @@ export default function PlanetView() {
         await animate(tintRef.current, { opacity: 1 }, { duration: reduce ? 0.2 : 0.45, ease: "easeIn" })
         router.push("/tasks")
     }
-
-
-
-    function orbitBand(endDateTime: string): "crashing" | "inner" | "mid" | "outer" | "belt" {
-        const startOfToday = new Date()
-        startOfToday.setHours(0, 0, 0, 0)
-        const end = new Date(endDateTime)
-        end.setHours(0, 0, 0, 0)
-        const days = Math.round((end.getTime() - startOfToday.getTime()) / 86_400_000)
-        if (days < 0) return "crashing"
-        if (days === 0) return "inner"
-        if (days <= 7) return "mid"
-        if (days <= 31) return "outer"
-        return "belt"
-    }
-
+    
     const bodies = tasks
-        .filter((t): t is Task & { endDateTime: string } => !t.completed && t.endDateTime !== null)
-        .map((t): PlanetBody => ({
+    .filter((t): t is Task & { endDateTime: string } => {
+        if (t.completed || t.endDateTime === null ) return false
+        const midnight = new Date(t.endDateTime);
+        midnight.setHours(0, 0, 0, 0);
+        return midnight.getTime() === startOfToday.getTime()
+    })
+    .map((t): PlanetBody => {
+        const seed = t.id.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+        return {
             id: t.id,
-            band: orbitBand(t.endDateTime),
+            band: PRIORITY_BAND[t.priority],
             color: t.category?.color ?? "#7C6CFF",
             priority: t.priority,
+            size: 3.5 + (seed % 3),
             name: t.name,
             description: t.description ?? null,
             due: t.endDateTime,
             category: t.category?.name ?? null
-        }))
+        }
+        })
 
     useEffect(() => { router.prefetch("/tasks") }, [router])
 
