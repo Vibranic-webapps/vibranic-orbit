@@ -71,7 +71,12 @@ export default function Ring({ band, tasks, offset, paused = false, onHover, onL
                                 width: `${task.size}vmin`,
                                 height: `${task.size}vmin`,
                                 top: `${top}%`, left: `${left}%`,
-                                ["--c" as string]: task.color
+                                ["--c" as string]: task.color,
+                                opacity: task.overdue ? 0.5 : 1,
+                                filter: task.overdue ? "saturate(0.35) brightness(0.85)" : undefined,
+                                animation: (!reduce && !task.overdue && task.urgency > 0.1)
+                                    ? `urgency-pulse ${(2.4 - task.urgency * 1.6).toFixed(2)}s ease-in-out infinite`
+                                    : undefined,
                             } as React.CSSProperties}
                             onMouseEnter={(e) => onHover(task, e.currentTarget)}
                             onMouseLeave={onLeave}

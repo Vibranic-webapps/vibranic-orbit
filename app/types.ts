@@ -55,4 +55,6 @@ export type PlanetBody = {
     description: string | null
     due: string;
     category: string | null;
+    urgency: number;
+    overdue: boolean;
 };
