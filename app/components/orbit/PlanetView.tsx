@@ -128,11 +128,11 @@ export default function PlanetView() {
 
             <div ref={tintRef} className="fixed inset-0 bg-black opacity-0 pointer-events-none z-50" />
             <div ref={scope} className="w-[80vmin] h-[80vmin] grid place-items-center perspective-[70vmin]">
-                <Ring band="crashing" tasks={bodies} offset={0} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
-                <Ring band="inner" tasks={bodies} offset={40} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
-                <Ring band="mid" tasks={bodies} offset={80} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
-                <Ring band="outer" tasks={bodies} offset={120} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
-                <Ring band="belt" tasks={bodies} offset={160} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="crashing" tasks={bodies} offset={0} paused={!!hovered} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="inner" tasks={bodies} offset={40} paused={!!hovered} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="mid" tasks={bodies} offset={80} paused={!!hovered} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="outer" tasks={bodies} offset={120} paused={!!hovered} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
+                <Ring band="belt" tasks={bodies} offset={160} paused={!!hovered} onHover={handleHover} onLeave={handleLeave} onClick={() => descend()} />
                 <div 
                     onClick={() => descend()}
                     className="
