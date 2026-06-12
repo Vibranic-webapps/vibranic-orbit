@@ -28,3 +28,8 @@ body {
   from { transform: translate(-50%, -50%) rotateZ(0deg)    rotateX(-55deg); }
   to   { transform: translate(-50%, -50%) rotateZ(-360deg) rotateX(-55deg); }
 }
+
+@keyframes urgency-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--c), 0 0 24px color-mix(in srgb, var(--c) 50%, transparent); }
+  50%      { box-shadow: 0 0 22px var(--c), 0 0 48px color-mix(in srgb, var(--c) 75%, transparent); }
+}
