@@ -59,7 +59,14 @@ export default function Ring({ band, tasks, offset, paused = false, onHover, onL
                         <div
                             key={task.id}
                             onClick={() => onClick(task)}
-                            className="absolute rounded-full pointer-events-auto bg-[radial-gradient(circle_at_35%_35%,color-mix(in_srgb,var(--c)_85%,white)_0%,var(--c)_45%,color-mix(in_srgb,var(--c),black_45%)_100%)] shadow-[0_0_12px_var(--c),0_0_24px_color-mix(in_srgb,var(--c)_50%,transparent)] transform-[translate(-50%,-50%)]"
+                            className="
+                                absolute
+                                rounded-full
+                                pointer-events-auto
+                                cursor-pointer
+                                bg-[radial-gradient(circle_at_35%_35%,color-mix(in_srgb,var(--c)_85%,white)_0%,var(--c)_45%,color-mix(in_srgb,var(--c),black_45%)_100%)] 
+                                shadow-[0_0_12px_var(--c),0_0_24px_color-mix(in_srgb,var(--c)_50%,transparent)] transform-[translate(-50%,-50%)]
+                            "
                             style={{
                                 width: `${task.size}vmin`,
                                 height: `${task.size}vmin`,
