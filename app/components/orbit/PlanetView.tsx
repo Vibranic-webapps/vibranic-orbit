@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useTasks } from "@/app/hooks/useTasks";
 import Ring from "@/app/components/orbit/Ring"
-import { useAnimate, useReducedMotion } from "motion/react";
+import { useAnimate, useReducedMotion, motion } from "motion/react";
 import { useRouter } from "next/navigation"
 import { PlanetBody, Task } from "@/app/types";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic"
+import { ChevronDown, ArrowUpRight, Circle, MousePointer2, HelpCircle } from "lucide-react"
 
 export default function PlanetView() {
     const { tasks } = useTasks()
@@ -16,11 +18,21 @@ export default function PlanetView() {
 
     const [hovered, setHovered] = useState<PlanetBody | null>(null)
     const [ballPoint, setBallPoint] = useState<{ x: number; y: number } | null>(null)
-    const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null)
     const panelRef = useRef<HTMLDivElement>(null)
     const hoveredEl = useRef<HTMLElement | null>(null)
-    const lineRef = useRef<SVGLineElement>(null)
+    const [showIntro, setShowIntro] = useState(false)
 
+    useEffect(() => {
+        if (!localStorage.getItem("orbit-intro-seen")) {
+            const id = requestAnimationFrame(() => setShowIntro(true))
+            return () => cancelAnimationFrame(id)
+        }
+    }, [])
+
+    function dismissIntro() {
+        localStorage.setItem("orbit-intro-seen", "1")
+        setShowIntro(false)
+    }
 
     const startOfToday = new Date()
     startOfToday.setHours(0, 0, 0, 0)
@@ -39,6 +51,7 @@ export default function PlanetView() {
         const r = el.getBoundingClientRect()
         setBallPoint({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
     }
+
     function handleLeave() {
         setHovered(null)
         hoveredEl.current = null
@@ -67,6 +80,7 @@ export default function PlanetView() {
             color: t.category?.color ?? "#7C6CFF",
             priority: t.priority,
             size: 3.5 + (seed % 3),
+            icon: t.category?.icon ?? null,
             name: t.name,
             description: t.description ?? null,
             due: t.endDateTime,
@@ -77,22 +91,19 @@ export default function PlanetView() {
     useEffect(() => { router.prefetch("/tasks") }, [router])
 
     useEffect(() => {
-        if (hovered && panelRef.current) {
-            const r = panelRef.current.getBoundingClientRect()
-            setAnchor({ x: r.left, y: r.top + r.height / 2 })
-        }
-    }, [hovered])
-
-    useEffect(() => {
         if (!hovered) return
         let raf: number
         const tick = () => {
             const el = hoveredEl.current
-            const line = lineRef.current
-            if (el && line) {
+            const panel = panelRef.current
+            if (el && panel) {
                 const r = el.getBoundingClientRect()
-                line.setAttribute("x1", String(r.left + r.width / 2))
-                line.setAttribute("y1", String(r.top + r.height / 2))
+                const cx = r.left + r.width / 2
+                const cy = r.top + r.height / 2
+                const ex = (r.width / 2) * 0.7
+                const ey = (r.height / 2) * 0.7
+                panel.style.left = `${cx + ex + 8}px`
+                panel.style.top  = `${cy - ey - 45}px`
             }
             raf = requestAnimationFrame(tick)
         }
@@ -102,28 +113,113 @@ export default function PlanetView() {
 
     return (
         <div className="grid place-items-center h-screen pb-40">
-            {hovered && (
-                <div ref={panelRef} className="fixed top-4 right-4 z-50 w-64 pointer-events-none bg-black/80 text-white text-sm p-3 rounded-lg border border-white/10 backdrop-blur">
-                    <div className="font-semibold">{hovered.name}</div>
-                    {hovered.description && <div className="font-medium">{hovered.description}</div>}
-                    <div className="opacity-70">Due {new Date(hovered.due).toLocaleDateString()}</div>
-                    <div className="opacity-70">Priority: {hovered.priority}</div>
-                    {hovered.category && <div className="opacity-70">{hovered.category}</div>}
-                </div>
+            <button
+                onClick={() => setShowIntro(true)}
+                aria-label="How it works"
+                className="fixed bottom-4 right-4 z-40 grid place-items-center h-9 w-9 rounded-full
+                        border border-white/15 bg-white/5 backdrop-blur-md
+                        text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            >
+                <HelpCircle size={18} />
+            </button>
+
+            {showIntro && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="fixed inset-0 z-60 grid place-items-center bg-black/60 backdrop-blur-sm p-6"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="w-full max-w-sm rounded-2xl border border-white/15 bg-white/5 backdrop-blur-md p-6 text-white shadow-2xl"
+                    >
+                        <h2 className="text-xl font-semibold text-center">Welcome to Vibranic-Orbit</h2>
+                        <p className="mt-1 text-sm text-white/60 text-center">Here&apos;s how it works</p>
+
+                        <ul className="mt-4 space-y-3 text-sm">
+                            <li className="flex items-start gap-3">
+                                <Circle size={18} className="mt-0.5 shrink-0 text-white/70" />
+                                <span>Each <span className="font-medium">orbiting body</span> is a task due today.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <MousePointer2 size={18} className="mt-0.5 shrink-0 text-white/70" />
+                                <span><span className="font-medium">Hover</span> a task to preview it, <span className="font-medium">click</span> to open it.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <ChevronDown size={18} className="mt-0.5 shrink-0 text-white/70" />
+                                <span><span className="font-medium">Click the planet</span> to dive into all your tasks.</span>
+                            </li>
+                        </ul>
+
+                        <button
+                            onClick={dismissIntro}
+                            className="mt-6 w-full rounded-lg border border-white/15 bg-white/10 hover:bg-white/15 py-2 text-sm font-medium transition-colors"
+                        >
+                            Got it
+                        </button>
+                    </motion.div>
+                </motion.div>
             )}
+            <div className="fixed top-6 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none select-none">
+                <h1 className="text-white/90 text-lg font-semibold tracking-wide">
+                    {new Date().toLocaleDateString('en-GB', { weekday: "long", month: "long", day: "numeric" })}
+                </h1>
 
-            {hovered && ballPoint && anchor && (
-                <svg className="fixed inset-0 z-40 pointer-events-none w-full h-full">
-                    <line ref={lineRef}
-                    x1={ballPoint.x} y1={ballPoint.y}
-                    x2={anchor.x - 140} y2={anchor.y}
-                    stroke="white" strokeWidth={1} strokeOpacity={0.5} />
-
-                    <line
-                    x1={anchor.x - 140} y1={anchor.y}
-                    x2={anchor.x} y2={anchor.y}
-                    stroke="white" strokeWidth={1} strokeOpacity={0.5} />
-                </svg>
+                <p className="text-white/50 text-sm">
+                    {bodies.length > 0
+                        ? `${bodies.length} ${bodies.length === 1 ? "task" : "tasks"} in orbit · hover to preview`
+                        : "Nothing in orbit today"}
+                </p>
+            </div>
+            {hovered && ballPoint && (
+                <motion.div
+                    ref={panelRef}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    style={{
+                        left: ballPoint.x,
+                        top: ballPoint.y,
+                        background: `linear-gradient(160deg, ${hovered.color}2e 0%, transparent 70%), rgba(255,255,255,0.04)`,
+                    }}
+                    className="fixed z-50 pointer-events-none -translate-y-1/2 max-w-62.5 wrap-break-words
+                            rounded-xl border border-white/15 backdrop-blur-md
+                            px-3 py-2 text-white"
+                >
+                    <span
+                        className="absolute top-2 right-2 grid place-items-center h-7.5 w-7.5 rounded-full shrink-0"
+                        style={{
+                            background: `radial-gradient(circle at 35% 35%, color-mix(in srgb, ${hovered.color} 85%, white) 0%, ${hovered.color} 45%, color-mix(in srgb, ${hovered.color}, black 45%) 100%)`,
+                            boxShadow: `0 0 6px ${hovered.color}`,
+                        }}
+                    >
+                        {hovered.icon && (
+                            <DynamicIcon
+                                name={hovered.icon as IconName}
+                                size={14.5}
+                                style={{ color: `color-mix(in srgb, ${hovered.color}, black 55%)` }}
+                            />
+                        )}
+                    </span>
+                    <div className="pr-9 text-sm font-semibold leading-tight">{hovered.name}</div>
+                    {hovered.description && (
+                        <div className="mt-0.5 pr-9 text-xs text-white/70">
+                            {hovered.description.length > 105
+                                ? hovered.description.slice(0, 105).trimEnd() + "…"
+                                : hovered.description}
+                        </div>
+                    )}
+                    <div className="mt-2 flex items-center justify-between gap-3 text-[11px]">
+                        <span className="flex items-center gap-1 text-white/70">
+                            Due {new Date(hovered.due).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                        </span>
+                        <span className="flex items-center gap-1 text-white/45">
+                            Open <ArrowUpRight size={12} />
+                        </span>
+                    </div>
+                </motion.div>
             )}
 
             <div ref={tintRef} className="fixed inset-0 bg-black opacity-0 pointer-events-none z-50" />
@@ -143,7 +239,12 @@ export default function PlanetView() {
                         bg-[radial-gradient(circle_at_35%_35%,#A99BFF_0%,#7C6CFF_45%,rgba(124,108,255,0.15)_100%)] 
                         shadow-[0_0_40px_rgba(124,108,255,0.7),0_0_80px_rgba(124,108,255,0.45),0_0_140px_rgba(124,108,255,0.25)] 
                     "
-                ></div>
+                >
+                </div>
+                <ChevronDown
+                    size={22}
+                    className="[grid-area:1/1] translate-y-[-7vmin] animate-bounce text-white/70 pointer-events-none select-none"
+                />
             </div>
         </div>
     )

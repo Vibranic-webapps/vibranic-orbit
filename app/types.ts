@@ -50,6 +50,7 @@ export type PlanetBody = {
     color: string;
     priority: Task["priority"];
     size: number;
+    icon: string | null;
     name: string;
     description: string | null
     due: string;
