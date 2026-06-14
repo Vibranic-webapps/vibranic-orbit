@@ -4,6 +4,8 @@ import { PlanetBody } from "@/app/types";
 
 const BAND_SIZE = { crashing: 40, inner: 55, mid: 70, outer: 85, belt: 100 }
 const BAND_DURATION = { crashing: 50, inner: 70, mid: 110, outer: 170, belt: 240 }
+const BAND_COLOR = { crashing: "#ef4444", inner: "#f97316", mid: "#8b5cf6", outer: "#3b82f6", belt: "#14b8a6" }
+const BAND_GLOW = { crashing: 0.20, inner: 0.16, mid: 0.12, outer: 0.09, belt: 0.07 }
 const SPEED_EASE = 3
 
 export default function Ring({ band, tasks, offset, paused = false, onHover, onLeave, onClick }: {
@@ -46,8 +48,12 @@ export default function Ring({ band, tasks, offset, paused = false, onHover, onL
 
     return (
         <div
-            className="[grid-area:1/1] pointer-events-none relative rounded-full border border-white/10 transform-3d transform-[rotateX(40deg)]"
-            style={{ width: `${size}%`, height: `${size}%` }}
+            className={`[grid-area:1/1] pointer-events-none relative rounded-full border transform-3d transform-[rotateX(40deg)]`}
+            style={{ 
+                width: `${size}%`, height: `${size}%`, 
+                borderColor: `color-mix(in srgb, ${BAND_COLOR[band]} ${BAND_GLOW[band] * 100}%, transparent)`,
+                boxShadow: `0 0 16px -6px color-mix(in srgb, ${BAND_COLOR[band]} ${BAND_GLOW[band] * 70}%, transparent)`
+            }}
         >
             <div ref={spinnerRef} className="orbit-spinner absolute inset-0 transform-3d">
                 {ringTasks.map((task, index) => {

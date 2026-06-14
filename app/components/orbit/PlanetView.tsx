@@ -7,7 +7,7 @@ import { useAnimate, useReducedMotion, motion } from "motion/react";
 import { useRouter } from "next/navigation"
 import { PlanetBody, Task } from "@/app/types";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic"
-import { ChevronDown, ArrowUpRight, Circle, MousePointer2, HelpCircle, Target, X } from "lucide-react"
+import { ChevronDown, ArrowUpRight, Circle, MousePointer2, HelpCircle, Target } from "lucide-react"
 
 export default function PlanetView() {
     const { tasks } = useTasks()
@@ -22,38 +22,6 @@ export default function PlanetView() {
     const hoveredEl = useRef<HTMLElement | null>(null)
     const [showIntro, setShowIntro] = useState(false)
     const [now, setNow] = useState(0)
-
-    useEffect(() => {
-        const update = () => setNow(Date.now())
-        const raf = requestAnimationFrame(update)
-        const id = setInterval(update, 60_000)
-        return () => { cancelAnimationFrame(raf); clearInterval(id) }
-    }, [])
-    const [showLegend, setShowLegend] = useState(true)
-
-    useEffect(() => {
-        if (localStorage.getItem("orbit-legend-hidden")) {
-            const id = requestAnimationFrame(() => setShowLegend(false))
-            return () => cancelAnimationFrame(id)
-        }
-    }, [])
-
-    function hideLegend() {
-        localStorage.setItem("orbit-legend-hidden", "1")
-        setShowLegend(false)
-    }
-    function revealLegend() {
-        localStorage.removeItem("orbit-legend-hidden")
-        setShowLegend(true)
-    }
-
-
-    useEffect(() => {
-        if (!localStorage.getItem("orbit-intro-seen")) {
-            const id = requestAnimationFrame(() => setShowIntro(true))
-            return () => cancelAnimationFrame(id)
-        }
-    }, [])
 
     function dismissIntro() {
         localStorage.setItem("orbit-intro-seen", "1")
@@ -92,36 +60,50 @@ export default function PlanetView() {
     }
     
     const bodies = tasks
-    .filter((t): t is Task & { endDateTime: string } => {
-        if (t.completed || t.endDateTime === null ) return false
+        .filter((t): t is Task & { endDateTime: string } => {
+            if (t.completed || t.endDateTime === null ) return false
 
-        const midnight = new Date(t.endDateTime);
-        midnight.setHours(0, 0, 0, 0);
-        return midnight.getTime() === startOfToday.getTime()
+            const midnight = new Date(t.endDateTime);
+            midnight.setHours(0, 0, 0, 0);
+            return midnight.getTime() === startOfToday.getTime()
 
-    })
-    .map((t): PlanetBody => {
-        const seed = t.id.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-
-        const hoursLeft = (new Date(t.endDateTime).getTime() - now) / 3_600_000
-        const overdue = hoursLeft <= 0
-        const urgency = overdue ? 0 : Math.max(0, Math.min(1, 1 - hoursLeft / 6))
-
-        return {
-            id: t.id,
-            band: PRIORITY_BAND[t.priority],
-            color: t.category?.color ?? "#7C6CFF",
-            priority: t.priority,
-            size: 3.5 + (seed % 3),
-            icon: t.category?.icon ?? null,
-            name: t.name,
-            description: t.description ?? null,
-            due: t.endDateTime,
-            category: t.category?.name ?? null,
-            urgency,
-            overdue,
-        }
         })
+        .map((t): PlanetBody => {
+            const seed = t.id.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+
+            const hoursLeft = (new Date(t.endDateTime).getTime() - now) / 3_600_000
+            const overdue = hoursLeft <= 0
+            const urgency = overdue ? 0 : Math.max(0, Math.min(1, 1 - hoursLeft / 6))
+
+            return {
+                id: t.id,
+                band: PRIORITY_BAND[t.priority],
+                color: t.category?.color ?? "#7C6CFF",
+                priority: t.priority,
+                size: 3.5 + (seed % 3),
+                icon: t.category?.icon ?? null,
+                name: t.name,
+                description: t.description ?? null,
+                due: t.endDateTime,
+                category: t.category?.name ?? null,
+                urgency,
+                overdue,
+            }
+        })
+
+    useEffect(() => {
+        const update = () => setNow(Date.now())
+        const raf = requestAnimationFrame(update)
+        const id = setInterval(update, 60_000)
+        return () => { cancelAnimationFrame(raf); clearInterval(id) }
+    }, [])
+
+    useEffect(() => {
+        if (!localStorage.getItem("orbit-intro-seen")) {
+            const id = requestAnimationFrame(() => setShowIntro(true))
+            return () => cancelAnimationFrame(id)
+        }
+    }, [])
 
     useEffect(() => { router.prefetch("/tasks") }, [router])
 
@@ -155,54 +137,6 @@ export default function PlanetView() {
 
     return (
         <div className="grid place-items-center h-screen pb-40">
-            {showLegend && (
-                <div className="fixed bottom-16 right-4 z-40 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2 select-none">
-                    <button
-                        onClick={hideLegend}
-                        aria-label="Hide priority legend"
-                        className="absolute top-1 right-1 grid place-items-center h-5 w-5 rounded-full
-                                text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                        <X size={12} />
-                    </button>
-                    <svg width="60" height="46" viewBox="0 0 60 46" className="shrink-0">
-                        <defs>
-                            <radialGradient id="miniPlanet" cx="38%" cy="35%" r="65%">
-                                <stop offset="0%" stopColor="#C9C0FF" />
-                                <stop offset="45%" stopColor="#7C6CFF" />
-                                <stop offset="100%" stopColor="#3B327A" />
-                            </radialGradient>
-                            <filter id="miniGlow" x="-80%" y="-80%" width="260%" height="260%">
-                                <feGaussianBlur stdDeviation="2.2" />
-                            </filter>
-                        </defs>
-
-                        <ellipse cx="30" cy="23" rx="26" ry="14"  fill="none" stroke="white" strokeOpacity="0.12" />
-                        <ellipse cx="30" cy="23" rx="16" ry="8.5" fill="none" stroke="white" strokeOpacity="0.22" />
-
-                        <circle cx="50" cy="31" r="2"   fill="white"   fillOpacity="0.4" />
-                        <circle cx="38" cy="16" r="2.5" fill="#A99BFF" />
-
-                        <circle cx="30" cy="23" r="6" fill="#7C6CFF" filter="url(#miniGlow)" opacity="0.85" />
-                        <circle cx="30" cy="23" r="5" fill="url(#miniPlanet)" />
-                    </svg>
-                    <div className="text-[11px] leading-tight">
-                        <div className="font-medium text-white/80">Priority</div>
-                        <div className="text-white/45">inner = urgent · outer = minor</div>
-                    </div>
-                </div>
-            )}
-            {!showLegend && (
-                <button
-                    onClick={revealLegend}
-                    aria-label="Show priority legend"
-                    className="fixed bottom-16 right-4 z-40 grid place-items-center h-9 w-9 rounded-full
-                            border border-white/15 bg-white/5 backdrop-blur-md
-                            text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                >
-                    <Target size={16} />
-                </button>
-            )}
             <button
                 onClick={() => setShowIntro(true)}
                 aria-label="How it works"
@@ -230,10 +164,6 @@ export default function PlanetView() {
 
                         <ul className="mt-4 space-y-3 text-sm">
                             <li className="flex items-start gap-3">
-                                <Circle size={18} className="mt-0.5 shrink-0 text-white/70" />
-                                <span>Each <span className="font-medium">orbiting body</span> is a task due today.</span>
-                            </li>
-                            <li className="flex items-start gap-3">
                                 <MousePointer2 size={18} className="mt-0.5 shrink-0 text-white/70" />
                                 <span><span className="font-medium">Hover</span> a task to preview it, <span className="font-medium">click</span> to open it.</span>
                             </li>
@@ -242,8 +172,12 @@ export default function PlanetView() {
                                 <span><span className="font-medium">Click the planet</span> to dive into all your tasks.</span>
                             </li>
                             <li className="flex items-start gap-3">
+                                <Circle size={18} className="mt-0.5 shrink-0 text-white/70" />
+                                <span>Each <span className="font-medium">orbiting body</span> is a task due today. and it&apos;s color shows the category</span>
+                            </li>
+                            <li className="flex items-start gap-3">
                                 <Target size={18} className="mt-0.5 shrink-0 text-white/70" />
-                                <span>The <span className="font-medium">Closer a task orbits</span>, the higher its priority. Small ones drift to the outer belt.</span>
+                                <span>The <span className="font-medium">Closer a task orbits</span>, the higher its priority. Less important tasks drift to the outer belt.</span>
                             </li>
                         </ul>
 

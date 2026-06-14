@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { IconPicker } from "@/components/IconPicker";
-import { useCategories } from "@/app/hooks/useCategories";
+import { Category } from "../types";
 
+interface categoriesViewProps {
+    setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+    loading: boolean;
+    categories: Category[];
+}
 
-export default function CategoriesPage() {
-    const { categories, setCategories, loading } = useCategories();
+export default function CategoriesView({ categories, setCategories, loading }: categoriesViewProps) {
     const [error, setError] = useState<string | null>(null);
     const [name, setName] = useState("");
     const [color, setColor] = useState("#3b82f6");
