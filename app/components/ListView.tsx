@@ -7,7 +7,6 @@ import { priorityOptions } from "@/app/constants"
 import TaskForm from "./TaskForm";
 import { toast } from "sonner";
 
-
 interface ListViewProps {
     tasks: Task[];
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
@@ -30,6 +29,7 @@ const initialForm: TaskFormValues = {
 
 export default function ListView({ tasks, setTasks, loading, categories }: ListViewProps) {
     const [form, setForm] = useState(initialForm);
+    const [formOpen, setFormOpen] = useState(false)
     const [formErrors, setFormErrors] = useState<FormErrors>({});
     const [editErrors, setEditErrors] = useState<FormErrors>({});
 
@@ -128,6 +128,7 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
                 setTasks(prev => [...prev, newTask]); 
                 setForm(initialForm)
                 setFormErrors({})
+                setFormOpen(false)
                 toast.success("Task added successfully")
             } else {
                 toast.error("Failed to add task.");
@@ -179,7 +180,27 @@ export default function ListView({ tasks, setTasks, loading, categories }: ListV
 
     return (
         <div className="p-4 flex flex-col gap-4">
-            <TaskForm value={form} onChange={setForm} errors={formErrors} categories={categories} onSubmit={handleAddTask} submitLabel="Add task" />
+            <button onClick={() => setFormOpen(true)}>Add task</button>
+            {formOpen && (
+                <div 
+                    onClick={() => setFormOpen(false)}
+                    className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm p-4"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 max-w-lg w-full"
+                    >
+                        <div>
+                            <h1 className="text-xl font-semibold">Add new task</h1>
+                            <button className="absolute top-4 right-4" onClick={() => setFormOpen(false)}>
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <TaskForm value={form} onChange={setForm} errors={formErrors} categories={categories} onSubmit={handleAddTask} submitLabel="Add task" />
+                    </div>
+
+                </div>
+            )}
             <div>
                 {loading ? (
                     <p>Loading tasks...</p>

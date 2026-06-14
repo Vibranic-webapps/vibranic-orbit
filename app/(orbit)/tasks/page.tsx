@@ -5,26 +5,43 @@ import { useCategories } from "@/app/hooks/useCategories";
 import ListView from "@/app/components/ListView";
 import CalendarView from "@/app/components/CalendarView";
 import TodoView from "@/app/components/TodoView";
+import CategoriesView from "@/app/components/CategoriesView";
 import AscentShell from "@/app/components/orbit/AscentShell";
+import { LayoutList, Calendar, CircleCheckBig, Tags } from "lucide-react"
 
 export default function TasksPage() {
-    const { tasks, setTasks, loading } = useTasks();
-    const { categories } = useCategories();
-    const [view, setView] = useState<"list" | "calendar" | "categories" | "todos">("list");
+    const { tasks, setTasks, loading: tasksLoading } = useTasks();
+    const { categories, setCategories, loading: categoriesLoading } = useCategories();
+    const [view, setView] = useState<"tasks" | "calendar" | "categories" | "todos">("tasks");
 
     return (
         <AscentShell>
             <div>
-                <div className="flex gap-2 justify-center p-4">
-                    <button onClick={() => setView("list")} className={view === "list" ? "font-bold underline" : ""}>List</button>
-                    <button onClick={() => setView("calendar")} className={view === "calendar" ? "font-bold underline" : ""}>Calendar</button>
-                    <button onClick={() => setView("todos")} className={view === "todos" ? "font-bold underline" : ""}>Todos</button>
-                    <a href="/categories" className={view === "categories" ? "font-bold underline" : ""}>categories</a>
+                <div className="flex justify-center gap-2 p-4">
+                    <div className="inline-flex gap-1 p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                        <button onClick={() => setView("tasks")} className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${view === "tasks" ? "text-(--vibranic) drop-shadow-[0_0_8px_var(--vibranic)]" : "text-white/50 hover:text-white"}`}>
+                            <LayoutList size={16} />
+                            Tasks
+                        </button>
+                        <button onClick={() => setView("calendar")} className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${view === "calendar" ? "text-(--vibranic) drop-shadow-[0_0_8px_var(--vibranic)]" : "text-white/50 hover:text-white"}`}>
+                            <Calendar size={16} />
+                            Calendar
+                        </button>
+                        <button onClick={() => setView("todos")} className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${view === "todos" ? "text-(--vibranic) drop-shadow-[0_0_8px_var(--vibranic)]" : "text-white/50 hover:text-white"}`}>
+                            <CircleCheckBig size={16} />
+                            Todos
+                        </button>
+                        <button onClick={() => setView("categories")} className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${view === "categories" ? "text-(--vibranic) drop-shadow-[0_0_8px_var(--vibranic)]" : "text-white/50 hover:text-white"}`}>
+                            <Tags size={16} />
+                            Categories
+                        </button>
+                    </div>
                 </div>
 
-                {view === "list" && <ListView tasks={tasks} setTasks={setTasks} loading={loading} categories={categories} />}
+                {view === "tasks" && <ListView tasks={tasks} setTasks={setTasks} categories={categories} loading={tasksLoading} />}
                 {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} />}
                 {view === "todos" && <TodoView tasks={tasks} setTasks={setTasks} />}
+                {view === "categories" && <CategoriesView categories={categories} setCategories={setCategories} loading={categoriesLoading} />}
 
             </div>
         </AscentShell>

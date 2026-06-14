@@ -1,6 +1,7 @@
 "use client";
 import { Task, TaskFormValues, FormErrors, Category } from "@/app/types";
 import { priorityOptions } from "@/app/constants"
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 function Field({ label, htmlFor, error, children }: {
     label?: string; htmlFor?: string; error?: string; children: React.ReactNode;
@@ -45,7 +46,7 @@ export default function TaskForm({ value, onChange, errors, categories, onSubmit
     };
 
     return (
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="w-full flex justify-center">
+        <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="w-full flex justify-center mt-4">
             <div className="flex flex-col gap-4 w-max">
                 <div className="flex flex-row gap-2 w-full">
                     <Field label="Name*" htmlFor="name" error={errors.name}>
@@ -81,23 +82,47 @@ export default function TaskForm({ value, onChange, errors, categories, onSubmit
                     )}
                 </div>
                 <Field label="Category" htmlFor="category">
-                <select id="category" value={value.categoryId}
-                        onChange={(e) => onChange({ ...value, categoryId: e.target.value })}
-                        className="border p-2 rounded w-full">
-                    <option value="">Select Category</option>
-                    {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                        {categories.map(c => (
+                            <button 
+                                key={c.id} 
+                                type="button"
+                                onClick={() => onChange({ ...value, categoryId: value.categoryId === c.id ? "" : c.id })}
+                                className={`px-3.75 py-2 rounded-md border text-sm font-medium transition-colors cursor-pointer ${value.categoryId === c.id ? "text-white" : "border-white/10 text-white/50 bg-white/5 hover:text-white hover:border-white/25"}`}
+                                style={value.categoryId === c.id ? {
+                                    background: `color-mix(in srgb, ${c.color} 20%, transparent)`,
+                                    borderColor: c.color,
+                                    boxShadow: `0 0 12px -2px ${c.color}`,
+                                } : undefined}
+                            >
+                                <DynamicIcon color={`${value.categoryId === c.id ? "#ffffff" : c.color}`} name={c.icon as IconName} size={24} />
+                            </button>
+                        ))}
+                        {categories.length === 0 && (
+                            <p className="text-sm text-white/40">No categories yet — add one in the Categories tab.</p>
+                        )}
+                    </div>
                 </Field>
                 <Field label="Priority" htmlFor="priority">
-                <select id="priority" value={value.priority}
-                        onChange={(e) => onChange({ ...value, priority: e.target.value as Task["priority"] })}
-                        className="border p-2 rounded w-full">
-                    {priorityOptions.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                    {priorityOptions.map((o) => (
+                        <button 
+                            className={`px-3.75 py-2 rounded-md border text-sm font-medium transition-colors cursor-pointer ${value.priority === o.value ? "text-white" : "border-white/10 text-white/50 bg-white/5 hover:text-white hover:border-white/25"}`}
+                            style={value.priority === o.value ? {
+                                background: `color-mix(in srgb, ${o.hex} 20%, transparent)`,
+                                borderColor: o.hex,
+                                boxShadow: `0 0 12px -2px ${o.hex}`,
+                            } : undefined}
+
+                            onClick={() => onChange({ ...value, priority: o.value as Task["priority"] })} 
+                            type="button" 
+                            key={o.value}
+                        >
+                            
+                            {o.label}
+                        </button>
                     ))}
-                </select>
+                </div>
                 </Field>
                 <Field label="Frequency" htmlFor="frequency">
                 <select id="frequency" value={value.frequency}
