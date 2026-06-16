@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Task } from "@/app/types";
+import { useCalendarGrid } from "@/app/hooks/useCalendarGrid";
+import { WEEKDAYS } from "@/app/lib/calendar";
 import { toast } from "sonner";
 
 interface CalendarViewProps {
@@ -10,19 +12,10 @@ interface CalendarViewProps {
 }
 
 export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
-    const [viewDate, setViewDate] = useState(new Date());
+    const { viewDate, cells, goToPrevMonth, goToNextMonth, goToToday } = useCalendarGrid();
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     const [newTaskName, setNewTaskName] = useState("");
-
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
-
-    const days = Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1));
-    const blanks = Array.from({ length: firstWeekday }, () => null)
-    const cells = [...blanks, ...days]
 
     const atMidnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
@@ -62,12 +55,6 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
     }
 
     const tasksForDay = (cell: Date) => tasks.filter(t => occursOn(t, cell));
-
-    const goToPrevMonth = () => setViewDate(new Date(year, month - 1, 1));
-    const goToNextMonth = () => setViewDate(new Date(year, month + 1, 1));
-    const goToToday = () => setViewDate(new Date());
-
-    const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     const handleAddTask = async () => {
         if (!newTaskName || !selectedDate) return;
@@ -117,7 +104,7 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
                     </div>
                 </header>
                 <div className="grid grid-cols-7 gap-2 mb-2">
-                    {weekdays.map(day => (
+                    {WEEKDAYS.map(day => (
                         <div key={day} className="text-center font-semibold text-sm">{day}</div>
                     ))}
                 </div>
@@ -128,7 +115,7 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
                                 <div className="flex flex-col gap-2" onClick={() => setSelectedDate(cell)}>
                                     <div className="text-right">{cell.getDate()}</div>
                                     {tasksForDay(cell).map(task => (
-                                        <div key={task.id} className="text-xs rounded px-1 bg-blue-500 truncate">{task.name}</div>
+                                        <div key={task.id} className="text-xs rounded px-1 bg-(--vibranic) text-white truncate">{task.name}</div>
                                     ))}
                                 </div>
                             )}
@@ -136,18 +123,32 @@ export default function CalendarView({ tasks, setTasks }: CalendarViewProps) {
                     ))}
                 </div>
                 {selectedDate && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="bg-white p-6 rounded shadow-lg">
-                        <h2 className="font-bold mb-2">Add task for {selectedDate.toDateString()}</h2>
-                        <input
-                            type="text"
-                            placeholder="Task name"
-                            value={newTaskName}
-                            onChange={(e) => setNewTaskName(e.target.value)}
-                            className="border p-2 rounded w-full mb-2"
-                        />
-                        <button onClick={() => setSelectedDate(null)}>Close</button>
-                        <button onClick={handleAddTask} className="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
+                    <div
+                        onClick={() => setSelectedDate(null)}
+                        className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm p-4"
+                    >
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-sm"
+                        >
+                            <h2 className="font-semibold mb-3">Add task for {selectedDate.toDateString()}</h2>
+                            <input
+                                type="text"
+                                placeholder="Task name"
+                                value={newTaskName}
+                                onChange={(e) => setNewTaskName(e.target.value)}
+                                className="border p-2 rounded w-full mb-4 border-white/10 bg-white/5 text-white/90 placeholder:text-white/40 focus:outline-none focus:border-(--vibranic)"
+                            />
+                            <div className="flex gap-2">
+                                <button type="button" onClick={() => setSelectedDate(null)}
+                                    className="flex-1 py-1.5 rounded border border-white/10 text-white/70 hover:text-white hover:border-white/25 cursor-pointer">
+                                    Close
+                                </button>
+                                <button type="button" onClick={handleAddTask}
+                                    className="flex-1 py-1.5 rounded bg-(--vibranic) text-white cursor-pointer">
+                                    Save
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

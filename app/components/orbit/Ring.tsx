@@ -5,7 +5,7 @@ import { PlanetBody } from "@/app/types";
 const BAND_SIZE = { crashing: 40, inner: 55, mid: 70, outer: 85, belt: 100 }
 const BAND_DURATION = { crashing: 50, inner: 70, mid: 110, outer: 170, belt: 240 }
 const BAND_COLOR = { crashing: "#ef4444", inner: "#f97316", mid: "#8b5cf6", outer: "#3b82f6", belt: "#14b8a6" }
-const BAND_GLOW = { crashing: 0.20, inner: 0.16, mid: 0.12, outer: 0.09, belt: 0.07 }
+const BAND_GLOW = { crashing: 0.22, inner: 0.19, mid: 0.16, outer: 0.13, belt: 0.10 }
 const SPEED_EASE = 3
 
 export default function Ring({ band, tasks, offset, paused = false, onHover, onLeave, onClick }: {
