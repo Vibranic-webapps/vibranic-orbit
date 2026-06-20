@@ -18,10 +18,11 @@ interface CalendarViewProps {
     tasks: Task[];
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
     categories: Category[];
+    setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
     onDrawerOpenChange?: (open: boolean) => void;
 }
 
-export default function CalendarView({ tasks, setTasks, categories, onDrawerOpenChange }: CalendarViewProps) {
+export default function CalendarView({ tasks, setTasks, categories, setCategories, onDrawerOpenChange }: CalendarViewProps) {
     const { viewDate, setViewDate, cells, goToPrevMonth, goToNextMonth, goToToday } = useCalendarGrid();
     const drawer = useRef<TaskDrawerHandle>(null);
     const { updateTask } = useTaskActions(setTasks);
@@ -259,6 +260,7 @@ export default function CalendarView({ tasks, setTasks, categories, onDrawerOpen
                 tasks={tasks}
                 setTasks={setTasks}
                 categories={categories}
+                setCategories={setCategories}
                 onOpenChange={(open) => { setDrawerOpen(open); onDrawerOpenChange?.(open); }}
             />
 

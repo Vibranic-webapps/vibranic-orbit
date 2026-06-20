@@ -30,6 +30,7 @@ interface TaskDrawerProps {
     tasks: Task[];
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
     categories: Category[];
+    setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
     onOpenChange?: (open: boolean) => void;
     onEditingChange?: (id: string | null) => void;
 }
@@ -64,7 +65,7 @@ function validateTask(form: TaskFormValues): FormErrors {
 }
 
 const TaskDrawer = forwardRef<TaskDrawerHandle, TaskDrawerProps>(function TaskDrawer(
-    { tasks, setTasks, categories, onOpenChange, onEditingChange }, ref,
+    { tasks, setTasks, categories, setCategories, onOpenChange, onEditingChange }, ref,
 ) {
     const { createTask, updateTask, deleteTask } = useTaskActions(setTasks);
 
@@ -195,9 +196,9 @@ const TaskDrawer = forwardRef<TaskDrawerHandle, TaskDrawerProps>(function TaskDr
                             </div>
                         </div>
                         {editingId ? (
-                            <TaskForm value={editForm} onChange={setEditForm} errors={editErrors} categories={categories} onSubmit={handleEditSubmit} submitLabel="Save changes" onSubViewChange={setSubView} />
+                            <TaskForm value={editForm} onChange={setEditForm} errors={editErrors} categories={categories} setCategories={setCategories} setTasks={setTasks} onSubmit={handleEditSubmit} submitLabel="Save changes" onSubViewChange={setSubView} />
                         ) : (
-                            <TaskForm value={form} onChange={setForm} errors={formErrors} categories={categories} onSubmit={handleAddTask} submitLabel="Add task" onSubViewChange={setSubView} />
+                            <TaskForm value={form} onChange={setForm} errors={formErrors} categories={categories} setCategories={setCategories} setTasks={setTasks} onSubmit={handleAddTask} submitLabel="Add task" onSubViewChange={setSubView} />
                         )}
                     </div>
                 </>
