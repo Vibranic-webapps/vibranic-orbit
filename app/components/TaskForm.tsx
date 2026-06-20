@@ -114,12 +114,14 @@ export default function TaskForm({ value, onChange, errors, categories, setCateg
         if (!onSubViewChange) return;
         let sub: SubView | null = null;
         if (picking) sub = { title: `Select ${fieldLabel(picking)}`, onBack: () => setPicking(null) };
-        else if (sheet === "category") sub = { title: "Category", onBack: () => setSheet(null) };
+        else if (sheet === "category") sub = creatingCat
+            ? { title: "New category", onBack: () => setCreatingCat(false) }
+            : { title: "Category", onBack: () => setSheet(null) };
         else if (sheet === "priority") sub = { title: "Priority", onBack: () => setSheet(null) };
         else if (sheet === "repeat") sub = { title: "Repeat", onBack: () => setSheet(null) };
         onSubViewChange(sub);
         return () => onSubViewChange(null);
-    }, [picking, sheet, onSubViewChange]);
+    }, [picking, sheet, creatingCat, onSubViewChange]);
 
     const toggleWeekday = (day: number) => {
         onChange({
@@ -147,6 +149,36 @@ export default function TaskForm({ value, onChange, errors, categories, setCateg
                 onConfirm={(v) => { onChange({ ...value, [picking]: v }); setPicking(null); }}
                 onClear={() => { onChange({ ...value, [picking]: "" }); setPicking(null); }}
             />
+        );
+    }
+
+    if (sheet === "category" && creatingCat) {
+        return (
+            <div className="flex flex-col gap-3 mt-2">
+                <input autoFocus placeholder="Category name"
+                    value={newCat.name}
+                    onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 placeholder:text-white/40 focus:outline-none focus:border-(--vibranic)" />
+                <div className="flex flex-col gap-1.5">
+                    <span className="text-xs text-white/50">Color</span>
+                    <ColorPicker value={newCat.color} onChange={(col) => setNewCat({ ...newCat, color: col })} />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                    <span className="text-xs text-white/50">Icon</span>
+                    <IconPicker value={newCat.icon} onChange={(icon) => setNewCat({ ...newCat, icon })} />
+                </div>
+                {catError && <p className="text-red-500 text-sm">{catError}</p>}
+                <div className="flex gap-2 pt-1">
+                    <button type="button" onClick={() => { setCreatingCat(false); setCatError(null); }}
+                        className="flex-1 rounded-lg border border-white/10 py-2 text-sm text-white/70 hover:text-white hover:border-white/25 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="button" onClick={handleCreateCategory}
+                        className="flex-1 rounded-lg bg-(--vibranic) py-2 text-sm font-medium text-white hover:brightness-110 cursor-pointer">
+                        Create
+                    </button>
+                </div>
+            </div>
         );
     }
 
@@ -187,41 +219,13 @@ export default function TaskForm({ value, onChange, errors, categories, setCateg
                     )
                 ))}
 
-                {creatingCat ? (
-                    <div className="mt-2 flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
-                        <input autoFocus placeholder="Category name"
-                            value={newCat.name}
-                            onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
-                            className="w-full rounded border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white/90 placeholder:text-white/40 focus:outline-none focus:border-(--vibranic)" />
-                        <div className="flex flex-col gap-1.5">
-                            <span className="text-xs text-white/50">Color</span>
-                            <ColorPicker value={newCat.color} onChange={(col) => setNewCat({ ...newCat, color: col })} />
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                            <span className="text-xs text-white/50">Icon</span>
-                            <IconPicker value={newCat.icon} onChange={(icon) => setNewCat({ ...newCat, icon })} />
-                        </div>
-                        {catError && <p className="text-red-500 text-sm">{catError}</p>}
-                        <div className="flex gap-2">
-                            <button type="button" onClick={() => { setCreatingCat(false); setCatError(null); }}
-                                className="flex-1 rounded border border-white/10 py-1.5 text-sm text-white/70 hover:text-white hover:border-white/25 cursor-pointer">
-                                Cancel
-                            </button>
-                            <button type="button" onClick={handleCreateCategory}
-                                className="flex-1 rounded bg-(--vibranic) py-1.5 text-sm font-medium text-white hover:brightness-110 cursor-pointer">
-                                Create
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <button type="button" onClick={() => setCreatingCat(true)}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-(--vibranic) hover:bg-white/5 cursor-pointer">
-                        <span className="grid h-6 w-6 place-items-center rounded-md border border-(--vibranic)/40">
-                            <Plus size={14} />
-                        </span>
-                        <span className="text-sm font-medium">New category</span>
-                    </button>
-                )}
+                <button type="button" onClick={() => { setCatError(null); setCreatingCat(true); }}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-(--vibranic) hover:bg-white/5 cursor-pointer">
+                    <span className="grid h-6 w-6 place-items-center rounded-md border border-(--vibranic)/40">
+                        <Plus size={14} />
+                    </span>
+                    <span className="text-sm font-medium">New category</span>
+                </button>
             </div>
         );
     }
