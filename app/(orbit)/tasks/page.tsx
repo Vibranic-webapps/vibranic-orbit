@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useTasks } from "@/app/hooks/useTasks";
 import { useCategories } from "@/app/hooks/useCategories";
-import ListView from "@/app/components/ListView";
+import ListView from "@/app/components/tasks/ListView";
 import CalendarView from "@/app/components/CalendarView";
 import TodoView from "@/app/components/TodoView";
 import CategoriesView from "@/app/components/CategoriesView";
@@ -40,7 +40,7 @@ export default function TasksPage() {
                 </div>
 
                 {view === "tasks" && <ListView tasks={tasks} setTasks={setTasks} categories={categories} loading={tasksLoading} onDrawerOpenChange={setDrawerOpen} />}
-                {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} />}
+                {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} categories={categories} onDrawerOpenChange={setDrawerOpen} />}
                 {view === "todos" && <TodoView tasks={tasks} setTasks={setTasks} />}
                 {view === "categories" && <CategoriesView categories={categories} setCategories={setCategories} loading={categoriesLoading} />}
 

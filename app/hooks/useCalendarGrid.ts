@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { buildMonthCells } from "@/app/lib/calendar";
 
-/**
- * Owns the "which month am I looking at" state and the navigation behavior.
- * Returns the month's cells plus prev/next/today controls.
- * Reused by both CalendarView and the date picker so the logic lives once.
- */
 export function useCalendarGrid(initial: Date = new Date()) {
     const [viewDate, setViewDate] = useState(initial);
 
