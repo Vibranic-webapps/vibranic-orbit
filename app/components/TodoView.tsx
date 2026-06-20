@@ -8,7 +8,6 @@ export default function TodoView({ tasks, setTasks }: {
 }) {
     const [name, setName] = useState("")
 
-    // a todo = a task with no scheduled start
     const todos = tasks.filter(t => t.startDateTime === null)
 
     async function addTodo() {
@@ -16,7 +15,7 @@ export default function TodoView({ tasks, setTasks }: {
         const res = await fetch("/api/tasks", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name }),     // name only → dates default to null
+            body: JSON.stringify({ name }),
         })
         if (!res.ok) return
         const newTask = await res.json()

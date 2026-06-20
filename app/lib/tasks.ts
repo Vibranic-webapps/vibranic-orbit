@@ -1,7 +1,123 @@
 import { Task } from "@/app/types";
 import { priorityOptions } from "@/app/constants";
+import { startOfDay, addDays } from "@/app/lib/calendar";
 
 export type Bucket = "overdue" | "today" | "upcoming" | "completed";
+export type ItemKind = "task" | "event";
+
+export function itemKind(t: Task): ItemKind {
+    if (!t.startDateTime || !t.endDateTime) return "task";
+
+    const start = new Date(t.startDateTime).getTime();
+    const end = new Date(t.endDateTime).getTime();
+
+    return end > start ? "event" : "task";
+}
+
+export function startTimeLabel(t: Task): string {
+    if (!t.startDateTime) return "";
+    return new Date(t.startDateTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+const DAY_MS = 86_400_000;
+export const dayDiff = (from: Date, to: Date) =>
+    Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / DAY_MS);
+
+export function isMultiDay(t: Task): boolean {
+    if (t.frequency) return false;
+    if (!t.startDateTime || !t.endDateTime) return false;
+    return dayDiff(new Date(t.startDateTime), new Date(t.endDateTime)) >= 1;
+}
+
+export interface SpanGeometry {
+    startCol: number;
+    span: number;
+    continuesLeft: boolean;
+    continuesRight: boolean;
+}
+
+export function spanGeometry(t: Task, weekStart: Date): SpanGeometry {
+    const startOffset = dayDiff(weekStart, new Date(t.startDateTime!));
+    const endOffset = dayDiff(weekStart, new Date(t.endDateTime!));
+
+    const startCol = Math.max(0, startOffset);
+    const endCol = Math.min(6, endOffset);
+
+    return {
+        startCol,
+        span: endCol - startCol + 1,
+        continuesLeft: startOffset < 0,
+        continuesRight: endOffset > 6,
+    };
+}
+
+export interface SpanBar extends SpanGeometry {
+    task: Task;
+    lane: number;
+}
+
+export function layoutWeek(events: Task[], weekStart: Date): { bars: SpanBar[]; laneCount: number } {
+    const weekEnd = addDays(weekStart, 6);
+
+    const overlapping = events.filter(t => {
+        if (!isMultiDay(t)) return false;
+        const s = startOfDay(new Date(t.startDateTime!));
+        const e = startOfDay(new Date(t.endDateTime!));
+        return s <= weekEnd && e >= weekStart;
+    });
+
+    const placed = overlapping
+        .map(task => ({ task, g: spanGeometry(task, weekStart) }))
+        .sort((a, b) => a.g.startCol - b.g.startCol);
+
+    const laneEndCol: number[] = [];
+    const bars: SpanBar[] = [];
+
+    for (const { task, g } of placed) {
+        const endCol = g.startCol + g.span - 1;
+        let lane = laneEndCol.findIndex(end => end < g.startCol);
+        if (lane === -1) { lane = laneEndCol.length; laneEndCol.push(endCol); }
+        else laneEndCol[lane] = endCol;
+        bars.push({ ...g, task, lane });
+    }
+
+    return { bars, laneCount: laneEndCol.length };
+}
+
+export const minutesIntoDay = (d: Date) => d.getHours() * 60 + d.getMinutes();
+
+export function occursOn(task: Task, day: Date): boolean {
+    if (!task.startDateTime || !task.endDateTime) return false;
+    const start = startOfDay(new Date(task.startDateTime));
+
+    if (day < start) return false;
+    if (task.recurrenceEnd && day > startOfDay(new Date(task.recurrenceEnd))) return false;
+
+    if (!task.frequency) {
+        return day <= startOfDay(new Date(task.endDateTime));
+    }
+
+    if (task.frequency === "DAILY") {
+        const days = Math.round((day.getTime() - start.getTime()) / DAY_MS);
+        return days % task.interval === 0;
+    }
+
+    if (task.frequency === "WEEKLY") {
+        const weekdays = task.byWeekday.length ? task.byWeekday : [start.getDay()];
+        if (!weekdays.includes(day.getDay())) return false;
+        const weeks = Math.floor((day.getTime() - start.getTime()) / (7 * DAY_MS));
+        return weeks % task.interval === 0;
+    }
+
+    if (task.frequency === "MONTHLY") {
+        if (day.getDate() !== start.getDate()) return false;
+        const months = (day.getFullYear() - start.getFullYear()) * 12
+            + (day.getMonth() - start.getMonth());
+        return months % task.interval === 0;
+    }
+
+    return false;
+}
 
 export const dueOf = (t: Task): Date | null => {
     const s = t.endDateTime || t.startDateTime;
@@ -21,6 +137,43 @@ export function taskBucket(t: Task, now = new Date()): Bucket {
 
 export const priorityRank = (t: Task) =>
     priorityOptions.findIndex(o => o.value === t.priority);
+
+export type CellDensity = "comfortable" | "cozy" | "compact";
+
+export function cellDensity(count: number, spanCount = 0): CellDensity {
+    if (count >= 4) return "compact";
+    if (count === 1 && spanCount === 0) return "comfortable";
+    return "cozy";
+}
+
+export interface CategoryGroup {
+    id: string;
+    name: string;
+    color: string;
+    icon: string;
+    count: number;
+}
+
+export function groupByCategory(tasks: Task[]): CategoryGroup[] {
+    const map = new Map<string, CategoryGroup>();
+    for (const t of tasks) {
+        const c = t.category;
+        const key = c?.id ?? "none";
+        const existing = map.get(key);
+        if (existing) {
+            existing.count++;
+        } else {
+            map.set(key, {
+                id: key,
+                name: c?.name ?? "Uncategorized",
+                color: c?.color ?? "#7C6CFF",
+                icon: c?.icon ?? "circle",
+                count: 1,
+            });
+        }
+    }
+    return [...map.values()];
+}
 
 export function dueLabel(t: Task): string {
     const due = dueOf(t);
@@ -61,7 +214,7 @@ export interface DayGroup {
 
 export function weekStart(d: Date): Date {
     const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const mondayIndex = (x.getDay() + 6) % 7; // 0 = Monday
+    const mondayIndex = (x.getDay() + 6) % 7;
     x.setDate(x.getDate() - mondayIndex);
     return x;
 }
@@ -100,8 +253,6 @@ export function groupByWeek(groups: DayGroup[], now = new Date()): WeekSection[]
     const nodate = special("nodate");
     const completed = special("completed");
 
-    // Fold Overdue into the first week's grid (as its first column) so it doesn't
-    // waste a whole band. If there are no upcoming weeks, give it its own section.
     if (overdue.length && weeks.length) {
         weeks[0] = { ...weeks[0], days: [...overdue, ...weeks[0].days] };
     }
@@ -135,10 +286,19 @@ export function groupByDay(tasks: Task[], now = new Date()): DayGroup[] {
     };
 
     for (const t of tasks) {
-        if (t.completed) { ensure("completed", "Completed", "completed", Number.MAX_SAFE_INTEGER, null).items.push(t); continue; }
-        if (taskBucket(t, now) === "overdue") { ensure("overdue", "Overdue", "overdue", -Infinity, null).items.push(t); continue; }
+        if (t.completed) { 
+            ensure("completed", "Completed", "completed", Number.MAX_SAFE_INTEGER, null).items.push(t); continue; 
+        }
+
+        if (taskBucket(t, now) === "overdue") { 
+            ensure("overdue", "Overdue", "overdue", -Infinity, null).items.push(t); continue; 
+        }
+
         const due = dueOf(t);
-        if (!due) { ensure("nodate", "No date", "upcoming", Number.MAX_SAFE_INTEGER - 1, null).items.push(t); continue; }
+        if (!due) { 
+            ensure("nodate", "No date", "upcoming", Number.MAX_SAFE_INTEGER - 1, null).items.push(t); continue; 
+        }
+
         const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
         const tone: DayGroup["tone"] = dueDay.getTime() === startOfToday.getTime() ? "today" : "upcoming";
         ensure(`d${dueDay.getTime()}`, dayLabel(due), tone, dueDay.getTime(), dueDay).items.push(t);
@@ -157,5 +317,6 @@ export function taskStats(tasks: Task[], now = new Date()) {
         if (b === "overdue") overdue++;
         if (b === "today") today++;
     }
+
     return { total: tasks.length, active, completed, overdue, today };
 }

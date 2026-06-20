@@ -5,3 +5,4 @@ ideas:
 3. move the perspective on the zoom on Descent up
 4. when adding a new task go to calendar view on the day that was selected.
 5. only show the tasks that are due today.
+6. change the loading state on the tasks view (ListView) — current loading UX needs rework.

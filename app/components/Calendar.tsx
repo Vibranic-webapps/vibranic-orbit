@@ -17,12 +17,10 @@ export default function Calendar({ selected, onSelect, min, max }: CalendarProps
 
     const today = new Date();
 
-    // The "roving" focus target: only one day is tabbable; arrow keys move it.
     const [focusedDate, setFocusedDate] = useState<Date>(selected ?? today);
     const gridRef = useRef<HTMLDivElement>(null);
     const shouldFocus = useRef(false);
 
-    // After a keyboard move, pull DOM focus to the newly focused day.
     useEffect(() => {
         if (!shouldFocus.current) return;
         shouldFocus.current = false;
@@ -34,14 +32,13 @@ export default function Calendar({ selected, onSelect, min, max }: CalendarProps
     const moveFocus = (next: Date) => {
         shouldFocus.current = true;
         setFocusedDate(next);
-        // If we crossed into another month, bring it into view.
         if (next.getFullYear() !== year || next.getMonth() !== month) {
             setViewDate(new Date(next.getFullYear(), next.getMonth(), 1));
         }
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
-        const weekdayIndex = (focusedDate.getDay() + 6) % 7; // Monday-first
+        const weekdayIndex = (focusedDate.getDay() + 6) % 7;
         switch (e.key) {
             case "ArrowLeft":  moveFocus(addDays(focusedDate, -1)); break;
             case "ArrowRight": moveFocus(addDays(focusedDate, 1)); break;
@@ -51,7 +48,7 @@ export default function Calendar({ selected, onSelect, min, max }: CalendarProps
             case "End":        moveFocus(addDays(focusedDate, 6 - weekdayIndex)); break;
             case "PageUp":     moveFocus(new Date(year, month - 1, focusedDate.getDate())); break;
             case "PageDown":   moveFocus(new Date(year, month + 1, focusedDate.getDate())); break;
-            default: return; // let other keys (Enter/Space/Tab) behave normally
+            default: return;
         }
         e.preventDefault();
     };
@@ -91,35 +88,37 @@ export default function Calendar({ selected, onSelect, min, max }: CalendarProps
 
             <div ref={gridRef} role="grid" onKeyDown={onKeyDown} className="grid grid-cols-7 gap-1">
                 {cells.map((cell, i) => {
-                    if (!cell) return <div key={i} role="gridcell" />;
+                    const { date, inCurrentMonth } = cell;
 
-                    const disabled = isDisabled(cell, min, max);
-                    const isSelected = selected ? isSameDay(cell, selected) : false;
-                    const isToday = isSameDay(cell, today);
-                    const isFocusTarget = isSameDay(cell, focusedDate);
+                    const disabled = isDisabled(date, min, max);
+                    const isSelected = selected ? isSameDay(date, selected) : false;
+                    const isToday = isSameDay(date, today);
+                    const isFocusTarget = isSameDay(date, focusedDate);
 
                     return (
                         <button
                             type="button"
                             key={i}
                             role="gridcell"
-                            data-day={toDateValue(cell)}
-                            aria-label={cell.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                            data-day={toDateValue(date)}
+                            aria-label={date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
                             aria-selected={isSelected}
                             aria-disabled={disabled}
                             tabIndex={isFocusTarget ? 0 : -1}
-                            onClick={() => { if (!disabled) onSelect(cell); }}
-                            className={`aspect-square rounded-md text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-(--vibranic) ${
-                                disabled
+                            onClick={() => { if (!disabled) onSelect(date); }}
+                            className={`aspect-square rounded-md text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-(--vibranic) 
+                                ${ disabled
                                     ? "text-white/20 cursor-not-allowed"
                                     : isSelected
                                         ? "bg-(--vibranic) text-white cursor-pointer"
                                         : isToday
                                             ? "text-(--vibranic) border border-(--vibranic)/40 hover:bg-white/10 cursor-pointer"
                                             : "text-white/80 hover:bg-white/10 cursor-pointer"
-                            }`}
+                                }
+                                ${!inCurrentMonth ? "opacity-40" : ""}
+                            `}
                         >
-                            {cell.getDate()}
+                            {date.getDate()}
                         </button>
                     );
                 })}

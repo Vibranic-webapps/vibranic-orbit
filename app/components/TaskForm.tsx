@@ -9,13 +9,11 @@ import { parseValue } from "@/app/lib/calendar";
 
 type PickField = "startDateTime" | "endDateTime" | "recurrenceEnd";
 
-/** Title for the picker sub-view, shown by the parent's header. */
 export const fieldLabel = (p: PickField) =>
     p === "startDateTime" ? "start date & time"
     : p === "endDateTime" ? "end date & time"
     : "repeat-until date";
 
-/** What a parent (e.g. the modal) needs to render chrome for the picker sub-view. */
 export interface SubView {
     title: string;
     onBack: () => void;
@@ -55,7 +53,6 @@ interface TaskFormProps {
 export default function TaskForm({ value, onChange, errors, categories, onSubmit, submitLabel, onCancel, onSubViewChange }: TaskFormProps) {
     const [picking, setPicking] = useState<null | PickField>(null)
 
-    // Tell the parent when we enter/leave the picker sub-view, so it can adapt its header.
     useEffect(() => {
         if (!onSubViewChange) return;
         onSubViewChange(picking ? { title: `Select ${fieldLabel(picking)}`, onBack: () => setPicking(null) } : null);
