@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Heart, Check, Trash, Pencil, Plus, Search, ArrowDownUp } from "lucide-react";
+import { Heart, Check, Trash, Pencil, Plus, Search, ArrowDownUp, Inbox, SearchX, TriangleAlert, X } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Task, Category } from "@/app/types";
 import { priorityOptions } from "@/app/constants"
@@ -14,10 +14,11 @@ interface ListViewProps {
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
     loading: boolean;
     categories: Category[];
+    setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
     onDrawerOpenChange?: (open: boolean) => void;
 }
 
-export default function ListView({ tasks, setTasks, loading, categories, onDrawerOpenChange }: ListViewProps) {
+export default function ListView({ tasks, setTasks, loading, categories, setCategories, onDrawerOpenChange }: ListViewProps) {
     const drawer = useRef<TaskDrawerHandle>(null);
     const { updateTask } = useTaskActions(setTasks);
 
@@ -33,6 +34,8 @@ export default function ListView({ tasks, setTasks, loading, categories, onDrawe
     const [statusFilter, setStatusFilter] = useState<"all" | "active" | "completed" | "favorite">("all");
     const [sortBy, setSortBy] = useState<"date" | "priority">("date");
     const [catFilter, setCatFilter] = useState<string | null>(null);
+
+    const clearFilters = () => { setSearch(""); setStatusFilter("all"); setCatFilter(null); };
 
     const now = new Date();
     const visible = tasks.filter(t => t.startDateTime !== null);
@@ -125,6 +128,18 @@ export default function ListView({ tasks, setTasks, loading, categories, onDrawe
                                 <h4 className={`font-medium text-white truncate ${task.completed ? "line-through text-white/50" : ""}`}>{task.name}</h4>
                                 <div className="flex items-center gap-2 text-xs mt-0.5">
                                     <span className={dueColor}>{dueLabel(task)}</span>
+                                    {task.categoryRemoved && (
+                                        <span className="flex items-center gap-1 rounded bg-amber-500/15 pl-1.5 pr-1 py-0.5 text-amber-300"
+                                            title="This task's category was deleted">
+                                            <TriangleAlert size={11} />
+                                            Category removed
+                                            <button type="button" title="Dismiss"
+                                                onClick={() => updateTask(task, { categoryRemoved: false })}
+                                                className="ml-0.5 rounded p-0.5 hover:bg-amber-500/25 cursor-pointer">
+                                                <X size={10} />
+                                            </button>
+                                        </span>
+                                    )}
                                     {priorityOption && (
                                         <span className="flex items-end gap-0.5 h-2" title={`${priorityOption.label} priority`}>
                                             {Array.from({ length: 5 }).map((_, i) => {
@@ -207,6 +222,7 @@ export default function ListView({ tasks, setTasks, loading, categories, onDrawe
                 tasks={tasks}
                 setTasks={setTasks}
                 categories={categories}
+                setCategories={setCategories}
                 onEditingChange={setEditingId}
                 onOpenChange={(open) => { setDrawerOpen(open); onDrawerOpenChange?.(open); }}
             />
@@ -264,9 +280,54 @@ export default function ListView({ tasks, setTasks, loading, categories, onDrawe
                 )}
 
                 {loading ? (
-                    <p className="text-white/40">Loading tasks…</p>
+                    <div className="grid gap-8 grid-cols-1 @2xl:grid-cols-2 @4xl:grid-cols-3 @6xl:grid-cols-4" aria-hidden>
+                        {Array.from({ length: 4 }).map((_, c) => (
+                            <div key={c} className="flex flex-col gap-3">
+                                <div className="h-3 w-24 rounded-full bg-white/10 animate-pulse" />
+                                <div className="flex flex-col gap-2 pl-11">
+                                    {Array.from({ length: 3 }).map((_, r) => (
+                                        <div key={r} className="h-12 rounded-lg bg-white/5 animate-pulse"
+                                            style={{ animationDelay: `${(c * 3 + r) * 90}ms` }} />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 ) : sorted.length === 0 ? (
-                    <p className="text-white/40">No tasks match.</p>
+                    visible.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+                            <div className="grid place-items-center h-16 w-16 rounded-full border border-white/10 bg-white/5">
+                                <Inbox className="text-white/40" size={28} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-white/80">No tasks yet</h3>
+                                <p className="mt-1 text-sm text-white/40">Create my first task to get started.</p>
+                            </div>
+                            <button
+                                onClick={() => drawer.current?.openAdd()}
+                                className={`group pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 text-white backdrop-blur-md transition-all cursor-pointer
+                                    bg-[color-mix(in_srgb,var(--vibranic)_15%,transparent)]
+                                    hover:bg-[color-mix(in_srgb,var(--vibranic)_30%,transparent)] hover:border-(--vibranic)
+                                    shadow-[0_0_16px_-4px_var(--vibranic)] hover:shadow-[0_0_24px_-2px_var(--vibranic)]
+                                    ${drawerOpen ? "pointer-events-none" : ""}`}
+                            >
+                                <Plus size={18} className="transition-transform group-hover:rotate-90" />
+                                Add my first task
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
+                            <SearchX className="text-white/30" size={28} />
+                            <div>
+                                <h3 className="text-base font-semibold text-white/70">No matching tasks</h3>
+                                <p className="mt-1 text-sm text-white/40">Try adjusting your search or filters.</p>
+                            </div>
+                            <button type="button" onClick={clearFilters}
+                                className="text-sm text-(--vibranic) hover:underline cursor-pointer">
+                                Clear filters
+                            </button>
+                        </div>
+                    )
                 ) : (
                     <div className="flex flex-col gap-12">
                         {groupByWeek(groupByDay(sorted, now), now).map(section => (

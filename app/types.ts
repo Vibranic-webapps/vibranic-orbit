@@ -15,7 +15,8 @@ export interface Task {
     priority: "EXTRA_SMALL" | "SMALL" | "MEDIUM" | "LARGE" | "EXTRA_LARGE";
     completed: boolean;
     favorite: boolean;
-    categoryId?: string;
+    categoryId?: string | null;
+    categoryRemoved: boolean;
     userId: string;
     frequency: "DAILY" | "WEEKLY" | "MONTHLY" | null;
     interval: number;

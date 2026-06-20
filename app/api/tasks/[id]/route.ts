@@ -14,7 +14,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
         const body = await request.json();
         const { name, description, startDateTime, endDateTime, priority, categoryId,
-        favorite, completed, frequency, interval, byWeekday, recurrenceEnd } = body;
+        favorite, completed, frequency, interval, byWeekday, recurrenceEnd, categoryRemoved } = body;
 
 
         const updatedTask = await prisma.task.update({
@@ -31,7 +31,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                 frequency,
                 interval,
                 byWeekday,
-                recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : recurrenceEnd
+                recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : recurrenceEnd,
+                // Assigning a category clears the "removed" warning; otherwise honor an explicit value.
+                categoryRemoved: categoryId ? false : categoryRemoved,
             },
             include: { category: true }
         });

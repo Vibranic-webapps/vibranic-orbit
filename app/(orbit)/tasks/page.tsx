@@ -39,8 +39,8 @@ export default function TasksPage() {
                     </div>
                 </div>
 
-                {view === "tasks" && <ListView tasks={tasks} setTasks={setTasks} categories={categories} loading={tasksLoading} onDrawerOpenChange={setDrawerOpen} />}
-                {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} categories={categories} onDrawerOpenChange={setDrawerOpen} />}
+                {view === "tasks" && <ListView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} loading={tasksLoading} onDrawerOpenChange={setDrawerOpen} />}
+                {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} onDrawerOpenChange={setDrawerOpen} />}
                 {view === "todos" && <TodoView tasks={tasks} setTasks={setTasks} />}
                 {view === "categories" && <CategoriesView categories={categories} setCategories={setCategories} loading={categoriesLoading} />}
 
