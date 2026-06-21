@@ -7,7 +7,7 @@ export async function GET() {
         const { userId } = await auth();
         if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const tasks = await prisma.task.findMany({ where: { userId }, include: { category: true } })
+        const tasks = await prisma.task.findMany({ where: { userId }, include: { category: true, state: true } })
         return NextResponse.json(tasks);
     } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
         const { name, description, startDateTime, endDateTime, priority, categoryId,
-        frequency, interval, byWeekday, recurrenceEnd } = body;
+        frequency, interval, byWeekday, recurrenceEnd, stateId, order } = body;
 
 
         if (!name) {
@@ -42,8 +42,10 @@ export async function POST(request: NextRequest) {
                 interval: interval || 1,
                 byWeekday: byWeekday || [],
                 recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
+                stateId: stateId || null,
+                order: typeof order === "number" ? order : 0,
             },
-            include: { category: true }
+            include: { category: true, state: true }
         });
 
         return NextResponse.json(newTask, { status: 201 });

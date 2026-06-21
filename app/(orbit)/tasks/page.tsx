@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useTasks } from "@/app/hooks/useTasks";
 import { useCategories } from "@/app/hooks/useCategories";
+import { useTodoStates } from "@/app/hooks/useTodoStates";
 import ListView from "@/app/components/tasks/ListView";
 import CalendarView from "@/app/components/CalendarView";
 import TodoView from "@/app/components/TodoView";
@@ -11,6 +12,7 @@ import { LayoutList, Calendar, CircleCheckBig } from "lucide-react"
 export default function TasksPage() {
     const { tasks, setTasks, loading: tasksLoading } = useTasks();
     const { categories, setCategories } = useCategories();
+    const { states, setStates, loading: statesLoading } = useTodoStates();
     const [view, setView] = useState<"tasks" | "calendar" | "categories" | "todos">("tasks");
     const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -35,7 +37,7 @@ export default function TasksPage() {
                 </div>
                 {view === "tasks" && <ListView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} loading={tasksLoading} onDrawerOpenChange={setDrawerOpen} />}
                 {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} onDrawerOpenChange={setDrawerOpen} />}
-                {view === "todos" && <TodoView tasks={tasks} setTasks={setTasks} />}
+                {view === "todos" && <TodoView tasks={tasks} setTasks={setTasks} states={states} setStates={setStates} loading={statesLoading} />}
             </div>
         </AscentShell>
     );
