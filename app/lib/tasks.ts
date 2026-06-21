@@ -320,3 +320,24 @@ export function taskStats(tasks: Task[], now = new Date()) {
 
     return { total: tasks.length, active, completed, overdue, today };
 }
+
+const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+// Turns a task's recurrence fields into a human sentence, e.g.
+// "Every 2 weeks on Mon, Thu · until Aug 1, 2026". Returns null for one-off tasks.
+export function recurrenceLabel(t: Task): string | null {
+    if (!t.frequency) return null;
+    const n = t.interval ?? 1;
+    const unit = t.frequency === "DAILY" ? "day" : t.frequency === "WEEKLY" ? "week" : "month";
+    let label = n === 1 ? `Every ${unit}` : `Every ${n} ${unit}s`;
+
+    if (t.frequency === "WEEKLY" && t.byWeekday?.length) {
+        const days = [...t.byWeekday].sort((a, b) => a - b).map(d => WEEKDAY_NAMES[d]).join(", ");
+        label += ` on ${days}`;
+    }
+    if (t.recurrenceEnd) {
+        const end = new Date(t.recurrenceEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        label += ` · until ${end}`;
+    }
+    return label;
+}

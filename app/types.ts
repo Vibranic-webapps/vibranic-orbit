@@ -6,6 +6,14 @@ export interface Category {
     userId: string;
 }
 
+export interface TodoState {
+    id: string;
+    name: string;
+    color: string;
+    order: number;
+    userId: string;
+}
+
 export interface Task {
     id: string;
     name: string;
@@ -22,11 +30,19 @@ export interface Task {
     interval: number;
     byWeekday: number[];
     recurrenceEnd: string | null;
-    category?: { 
-        id: string; 
-        name: string; 
-        color: string; 
-        icon: string 
+    category?: {
+        id: string;
+        name: string;
+        color: string;
+        icon: string
+    } | null;
+    // Todo board: undated tasks live in a TodoState column.
+    stateId?: string | null;
+    order?: number;
+    state?: {
+        id: string;
+        name: string;
+        color: string;
     } | null;
 }
 

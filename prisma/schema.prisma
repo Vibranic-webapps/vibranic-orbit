@@ -36,6 +36,20 @@ model Category {
   @@unique([userId, name])
 }
 
+model TodoState {
+  id             String                  @id @default(cuid())
+  userId         String
+  name           String
+  color          String                  @default("#7C6CFF")
+  order          Int                     @default(0)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  tasks          Task[]
+
+  @@index([userId])
+  @@unique([userId, name])
+}
+
 model Task {
   id             String                  @id @default(cuid())
   userId         String
@@ -55,9 +69,14 @@ model Task {
   interval       Int                     @default(1)
   byWeekday      Int[]                   // WEEKLY only: JS getDay() values, 0 = Sun … 6 = Sat
   recurrenceEnd  DateTime?
+  // Todo board: undated tasks (startDateTime null) live in a TodoState column.
+  stateId        String?
+  state          TodoState?              @relation(fields: [stateId], references: [id])
+  order          Int                     @default(0)
 
   @@index([userId])
   @@index([categoryId])
+  @@index([stateId])
 }
 
 model ColorPreset {
