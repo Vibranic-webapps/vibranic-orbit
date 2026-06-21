@@ -7,6 +7,7 @@ import ListView from "@/app/components/tasks/ListView";
 import CalendarView from "@/app/components/CalendarView";
 import TodoView from "@/app/components/TodoView";
 import AscentShell from "@/app/components/orbit/AscentShell";
+import { UserButton } from "@clerk/nextjs";
 import { LayoutList, Calendar, CircleCheckBig } from "lucide-react"
 
 export default function TasksPage() {
@@ -19,7 +20,7 @@ export default function TasksPage() {
     return (
         <AscentShell>
             <div className={`transition-[margin] duration-300 ease-out ${drawerOpen ? "lg:mr-122.5" : "mr-0"}`}>
-                <div className="flex justify-center gap-2 p-4">
+                <div className="flex items-center justify-center gap-3 p-4">
                     <div className="inline-flex gap-1 p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                         <button onClick={() => setView("tasks")} className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${view === "tasks" ? "text-(--vibranic) drop-shadow-[0_0_8px_var(--vibranic)]" : "text-white/50 hover:text-white"}`}>
                             <LayoutList size={16} />
@@ -34,6 +35,7 @@ export default function TasksPage() {
                             Todos
                         </button>
                     </div>
+                    <UserButton appearance={{ elements: { avatarBox: "w-9 h-9" } }} />
                 </div>
                 {view === "tasks" && <ListView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} loading={tasksLoading} onDrawerOpenChange={setDrawerOpen} />}
                 {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} onDrawerOpenChange={setDrawerOpen} />}
