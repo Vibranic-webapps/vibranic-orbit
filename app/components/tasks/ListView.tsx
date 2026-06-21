@@ -8,6 +8,7 @@ import { priorityOptions } from "@/app/constants"
 import { taskBucket, taskStats, dueOf, priorityRank, dueLabel, groupByDay, groupByWeek, type DayGroup } from "@/app/lib/tasks";
 import { useTaskActions } from "@/app/hooks/useTaskActions";
 import TaskDrawer, { type TaskDrawerHandle } from "../TaskDrawer";
+import TaskDetailCard from "./TaskDetailCard";
 
 interface ListViewProps {
     tasks: Task[];
@@ -21,6 +22,7 @@ interface ListViewProps {
 export default function ListView({ tasks, setTasks, loading, categories, setCategories, onDrawerOpenChange }: ListViewProps) {
     const drawer = useRef<TaskDrawerHandle>(null);
     const { updateTask } = useTaskActions(setTasks);
+    const [detailTask, setDetailTask] = useState<Task | null>(null);
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -58,9 +60,9 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
 
     const toneHex = (tone: DayGroup["tone"]) =>
         tone === "overdue" ? "#ef4444"
-        : tone === "today" ? "#f59e0b"
-        : tone === "completed" ? "#22c55e"
-        : "#7C6CFF";
+            : tone === "today" ? "#f59e0b"
+                : tone === "completed" ? "#22c55e"
+                    : "#7C6CFF";
 
     const renderRow = (task: Task) => {
         const priorityOption = priorityOptions.find(o => o.value === task.priority);
@@ -68,13 +70,13 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
         const isEditing = editingId === task.id;
         const dueColor =
             bucket === "overdue" ? "text-red-400"
-            : bucket === "today" ? "text-amber-300"
-            : "text-white/50";
+                : bucket === "today" ? "text-amber-300"
+                    : "text-white/50";
         const dot = priorityOption?.hex ?? "#7C6CFF";
         const rank = priorityRank(task);
 
         return (
-            <div key={task.id} className="group relative pl-11 hover:z-20">
+            <div key={task.id} className={`group relative pl-11 max-w-75 hover:z-20 ${detailTask?.id === task.id ? "z-30" : ""}`}>
                 {task.category ? (
                     <button type="button" title={`Filter by ${task.category.name}`}
                         onClick={() => setCatFilter(catFilter === task.category!.id ? null : task.category!.id)}
@@ -96,83 +98,92 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
                 )}
 
                 <div className={`relative isolate rounded-lg px-3 py-2 transition-shadow ${task.completed ? "opacity-50" : ""} ${isEditing ? "ring-2 ring-(--vibranic)/70 shadow-[0_0_18px_-6px_var(--vibranic)]" : ""}`}>
-                        <span aria-hidden
-                            className={`absolute inset-0 -z-10 rounded-lg transition-opacity ${isEditing ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-                            style={{
-                                background: task.category?.color
-                                    ? `linear-gradient(135deg, ${task.category.color}33 0%, transparent 60%), rgba(255,255,255,0.04)`
-                                    : "rgba(255,255,255,0.04)",
-                            }} />
+                    <span aria-hidden
+                        className={`absolute inset-0 -z-10 rounded-lg transition-opacity ${isEditing ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                        style={{
+                            background: task.category?.color
+                                ? `linear-gradient(135deg, ${task.category.color}33 0%, transparent 60%), rgba(255,255,255,0.04)`
+                                : "rgba(255,255,255,0.04)",
+                        }} />
 
-                        <div className="hidden lg:flex absolute left-full top-1/2 -translate-y-1/2 flex-col items-center gap-1 pl-1 opacity-0 pointer-events-none transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
-                            <button type="button" title="Edit" className="p-1 rounded-md text-white/60 hover:bg-white/10 hover:text-white cursor-pointer" onClick={() => drawer.current?.openEdit(task)}>
-                                <Pencil size={15} />
-                            </button>
-                            <button type="button" title="Delete" className="p-1 rounded-md text-white/60 hover:bg-red-500/15 hover:text-red-400 cursor-pointer" onClick={() => drawer.current?.requestDelete(task)}>
-                                <Trash size={15} />
-                            </button>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <button type="button" title={task.completed ? "Mark as not done" : "Mark as done"}
-                                onClick={() => updateTask(task, { completed: !task.completed })}
-                                className={`shrink-0 grid place-items-center h-5 w-5 rounded-full border-2 transition-colors cursor-pointer ${
-                                    task.completed
-                                        ? "bg-green-500/80 border-green-500 text-white"
-                                        : "border-white/30 text-transparent hover:border-green-400 hover:text-green-400/60"
-                                }`}>
-                                <Check size={12} strokeWidth={3} />
-                            </button>
-
-                            <div className="min-w-0 flex-1">
-                                <h4 className={`font-medium text-white truncate ${task.completed ? "line-through text-white/50" : ""}`}>{task.name}</h4>
-                                <div className="flex items-center gap-2 text-xs mt-0.5">
-                                    <span className={dueColor}>{dueLabel(task)}</span>
-                                    {task.categoryRemoved && (
-                                        <span className="flex items-center gap-1 rounded bg-amber-500/15 pl-1.5 pr-1 py-0.5 text-amber-300"
-                                            title="This task's category was deleted">
-                                            <TriangleAlert size={11} />
-                                            Category removed
-                                            <button type="button" title="Dismiss"
-                                                onClick={() => updateTask(task, { categoryRemoved: false })}
-                                                className="ml-0.5 rounded p-0.5 hover:bg-amber-500/25 cursor-pointer">
-                                                <X size={10} />
-                                            </button>
-                                        </span>
-                                    )}
-                                    {priorityOption && (
-                                        <span className="flex items-end gap-0.5 h-2" title={`${priorityOption.label} priority`}>
-                                            {Array.from({ length: 5 }).map((_, i) => {
-                                                const on = i <= rank;
-                                                return (
-                                                    <span key={i} className="w-1 rounded-full"
-                                                        style={{
-                                                            height: 5 + i * 2,
-                                                            background: on ? dot : "rgba(255,255,255,0.15)",
-                                                            boxShadow: on ? `0 0 4px ${dot}` : undefined,
-                                                        }} />
-                                                );
-                                            })}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex lg:hidden items-center gap-1 shrink-0">
-                                <button type="button" title="Edit" className="p-1 rounded-md text-white/60 hover:text-white cursor-pointer" onClick={() => drawer.current?.openEdit(task)}>
-                                    <Pencil size={16} />
-                                </button>
-                                <button type="button" title="Delete" className="p-1 rounded-md text-white/60 hover:text-red-400 cursor-pointer" onClick={() => drawer.current?.requestDelete(task)}>
-                                    <Trash size={16} />
-                                </button>
-                            </div>
-
-                            <button type="button" title="Favorite" className="shrink-0 p-1 rounded-md hover:bg-white/10 cursor-pointer" onClick={() => updateTask(task, { favorite: !task.favorite })}>
-                                <Heart className={task.favorite ? "fill-red-500 text-red-500" : "text-white/30"} size={18} />
-                            </button>
-                        </div>
-
+                    <div className="hidden lg:flex absolute left-full top-1/2 -translate-y-1/2 flex-col items-center gap-1 pl-1 opacity-0 pointer-events-none transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+                        <button type="button" title="Edit" className="p-1 rounded-md text-white/60 hover:bg-white/10 hover:text-white cursor-pointer" onClick={() => drawer.current?.openEdit(task)}>
+                            <Pencil size={15} />
+                        </button>
+                        <button type="button" title="Delete" className="p-1 rounded-md text-white/60 hover:bg-red-500/15 hover:text-red-400 cursor-pointer" onClick={() => drawer.current?.requestDelete(task)}>
+                            <Trash size={15} />
+                        </button>
                     </div>
+
+                    <div className="flex items-center gap-3">
+                        <button type="button" title={task.completed ? "Mark as not done" : "Mark as done"}
+                            onClick={() => updateTask(task, { completed: !task.completed })}
+                            className={`shrink-0 grid place-items-center h-5 w-5 rounded-full border-2 transition-colors cursor-pointer ${task.completed
+                                    ? "bg-green-500/80 border-green-500 text-white"
+                                    : "border-white/30 text-transparent hover:border-green-400 hover:text-green-400/60"
+                                }`}>
+                            <Check size={12} strokeWidth={3} />
+                        </button>
+
+                        <div className="relative min-w-0 flex-1">
+                            <button type="button" title="View details" onClick={() => setDetailTask(task)} className="absolute inset-0 z-0 rounded-md cursor-pointer" aria-label={`View details for ${task.name}`} />
+                            <h4 className={`font-medium text-white truncate ${task.completed ? "line-through text-white/50" : ""}`}>{task.name}</h4>
+                            <div className="flex items-center gap-2 text-xs mt-0.5">
+                                <span className={`pointer-events-none ${dueColor}`}>{dueLabel(task)}</span>
+                                {task.categoryRemoved && (
+                                    <span className="reletive z-10 flex items-center gap-1 rounded bg-amber-500/15 pl-1.5 pr-1 py-0.5 text-amber-300"
+                                        title="This task's category was deleted">
+                                        <TriangleAlert size={11} />
+                                        Category removed
+                                        <button type="button" title="Dismiss"
+                                            onClick={() => updateTask(task, { categoryRemoved: false })}
+                                            className="ml-0.5 rounded p-0.5 hover:bg-amber-500/25 cursor-pointer">
+                                            <X size={10} />
+                                        </button>
+                                    </span>
+                                )}
+                                {priorityOption && (
+                                    <span className="flex items-end gap-0.5 h-2" title={`${priorityOption.label} priority`}>
+                                        {Array.from({ length: 5 }).map((_, i) => {
+                                            const on = i <= rank;
+                                            return (
+                                                <span key={i} className="w-1 rounded-full"
+                                                    style={{
+                                                        height: 5 + i * 2,
+                                                        background: on ? dot : "rgba(255,255,255,0.15)",
+                                                        boxShadow: on ? `0 0 4px ${dot}` : undefined,
+                                                    }} />
+                                            );
+                                        })}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex lg:hidden items-center gap-1 shrink-0">
+                            <button type="button" title="Edit" className="p-1 rounded-md text-white/60 hover:text-white cursor-pointer" onClick={() => drawer.current?.openEdit(task)}>
+                                <Pencil size={16} />
+                            </button>
+                            <button type="button" title="Delete" className="p-1 rounded-md text-white/60 hover:text-red-400 cursor-pointer" onClick={() => drawer.current?.requestDelete(task)}>
+                                <Trash size={16} />
+                            </button>
+                        </div>
+
+                        <button type="button" title="Favorite" className="shrink-0 p-1 rounded-md hover:bg-white/10 cursor-pointer" onClick={() => updateTask(task, { favorite: !task.favorite })}>
+                            <Heart className={task.favorite ? "fill-red-500 text-red-500" : "text-white/30"} size={18} />
+                        </button>
+                    </div>
+
+                </div>
+
+                {detailTask?.id === task.id && (
+                    <TaskDetailCard
+                        task={task}
+                        onClose={() => setDetailTask(null)}
+                        onEdit={() => { setDetailTask(null); drawer.current?.openEdit(task); }}
+                        onDelete={() => { setDetailTask(null); drawer.current?.requestDelete(task); }}
+                    />
+                )}
             </div>
         );
     };
@@ -258,16 +269,14 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
                 {categories.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2">
                         <button type="button" onClick={() => setCatFilter(null)}
-                            className={`rounded-full border px-3 py-1 text-xs transition-colors cursor-pointer ${
-                                catFilter === null ? "border-white/30 bg-white/10 text-white" : "border-white/10 text-white/50 hover:text-white"
-                            }`}>
+                            className={`rounded-full border px-3 py-1 text-xs transition-colors cursor-pointer ${catFilter === null ? "border-white/30 bg-white/10 text-white" : "border-white/10 text-white/50 hover:text-white"
+                                }`}>
                             All
                         </button>
                         {categories.map(c => (
                             <button key={c.id} type="button" onClick={() => setCatFilter(catFilter === c.id ? null : c.id)}
-                                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors cursor-pointer ${
-                                    catFilter === c.id ? "border-white/30 bg-white/10 text-white" : "border-white/10 text-white/50 hover:text-white"
-                                }`}>
+                                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors cursor-pointer ${catFilter === c.id ? "border-white/30 bg-white/10 text-white" : "border-white/10 text-white/50 hover:text-white"
+                                    }`}>
                                 <span className="grid place-items-center h-4 w-4 rounded-full"
                                     style={{
                                         background: `radial-gradient(circle at 35% 35%, color-mix(in srgb, ${c.color} 85%, white) 0%, ${c.color} 45%, color-mix(in srgb, ${c.color}, black 45%) 100%)`,
