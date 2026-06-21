@@ -37,7 +37,11 @@ export default function TasksPage() {
                 </div>
                 {view === "tasks" && <ListView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} loading={tasksLoading} onDrawerOpenChange={setDrawerOpen} />}
                 {view === "calendar" && <CalendarView tasks={tasks} setTasks={setTasks} categories={categories} setCategories={setCategories} onDrawerOpenChange={setDrawerOpen} />}
-                {view === "todos" && <TodoView tasks={tasks} setTasks={setTasks} states={states} setStates={setStates} loading={statesLoading} />}
+                {view === "todos" && (
+                    <div className="w-full max-w-360 mx-auto">
+                        <TodoView tasks={tasks} setTasks={setTasks} states={states} setStates={setStates} loading={statesLoading} />
+                    </div>
+                )}
             </div>
         </AscentShell>
     );

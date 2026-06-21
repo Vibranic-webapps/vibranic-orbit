@@ -32,7 +32,7 @@ export default function AscentShell({ children }: { children: React.ReactNode })
                 onClick={ascend}
                 title="Back to Orbit"
                 aria-label="Back to Orbit"
-                className="group fixed top-4 left-4 z-50 flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-1.5 pl-2 pr-4 text-white backdrop-blur-md transition-all cursor-pointer
+                className="group fixed top-4 left-[max(1rem,calc((100vw_-_90rem)/2_+_1rem))] z-50 flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-1.5 pl-2 pr-4 text-white backdrop-blur-md transition-all cursor-pointer
                     hover:border-(--vibranic) hover:bg-[color-mix(in_srgb,var(--vibranic)_15%,transparent)] hover:shadow-[0_0_20px_-4px_var(--vibranic)]"
             >
                 {/* mini orbit: ringed planet with a circling satellite */}
