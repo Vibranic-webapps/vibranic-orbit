@@ -323,8 +323,6 @@ export function taskStats(tasks: Task[], now = new Date()) {
 
 const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Turns a task's recurrence fields into a human sentence, e.g.
-// "Every 2 weeks on Mon, Thu · until Aug 1, 2026". Returns null for one-off tasks.
 export function recurrenceLabel(t: Task): string | null {
     if (!t.frequency) return null;
     const n = t.interval ?? 1;

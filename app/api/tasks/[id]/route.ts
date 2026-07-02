@@ -33,9 +33,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                 interval,
                 byWeekday,
                 recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : recurrenceEnd,
-                // Assigning a category clears the "removed" warning; otherwise honor an explicit value.
                 categoryRemoved: categoryId ? false : categoryRemoved,
-                // stateId may be explicitly null (move to "no column"); undefined leaves it unchanged.
                 stateId: stateId === undefined ? undefined : stateId,
                 order: typeof order === "number" ? order : undefined,
             },

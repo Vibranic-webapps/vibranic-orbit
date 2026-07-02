@@ -36,7 +36,6 @@ export interface Task {
         color: string;
         icon: string
     } | null;
-    // Todo board: undated tasks live in a TodoState column.
     stateId?: string | null;
     order?: number;
     state?: {

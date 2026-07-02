@@ -37,7 +37,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         const state = await prisma.todoState.findFirst({ where: { id, userId } });
         if (!state) return NextResponse.json({ error: "State not found" }, { status: 404 });
 
-        // Detach todos from this column before removing it (FK is restrict by default).
         await prisma.task.updateMany({ where: { stateId: id, userId }, data: { stateId: null } });
         await prisma.todoState.delete({ where: { id } });
 

@@ -4,7 +4,7 @@ import { Task, TaskFormValues, FormErrors, Category } from "@/app/types";
 import { priorityOptions } from "@/app/constants";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { CalendarClock, CalendarDays, Tag, Flag, Repeat, ChevronRight, Check, Plus, Trash2 } from "lucide-react";
-import { IconPicker } from "@/components/IconPicker";
+import { IconPicker } from "@/app/components/IconPicker";
 import ColorPicker from "./ColorPicker";
 import DateTimePicker from "./DateTimePicker";
 import { useCategoryActions } from "@/app/hooks/useCategoryActions";

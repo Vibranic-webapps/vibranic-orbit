@@ -25,12 +25,19 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
     const [detailTask, setDetailTask] = useState<Task | null>(null);
 
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         const id = requestAnimationFrame(() => setMounted(true));
         return () => cancelAnimationFrame(id);
     }, []);
+
+    // A right-side panel (edit drawer, or the detail sheet on desktop) pushes the
+    // page content aside. Derive the combined open state and report it up to the page.
+    const drawerOpen = editOpen || detailTask !== null;
+    useEffect(() => {
+        onDrawerOpenChange?.(drawerOpen);
+    }, [drawerOpen, onDrawerOpenChange]);
 
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | "active" | "completed" | "favorite">("all");
@@ -76,7 +83,7 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
         const rank = priorityRank(task);
 
         return (
-            <div key={task.id} className={`group relative pl-11 max-w-75 hover:z-20 ${detailTask?.id === task.id ? "z-30" : ""}`}>
+            <div key={task.id} className={`group relative pl-11 @2xl:max-w-75 hover:z-20 ${detailTask?.id === task.id ? "z-30" : ""}`}>
                 {task.category ? (
                     <button type="button" title={`Filter by ${task.category.name}`}
                         onClick={() => setCatFilter(catFilter === task.category!.id ? null : task.category!.id)}
@@ -175,15 +182,6 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
                     </div>
 
                 </div>
-
-                {detailTask?.id === task.id && (
-                    <TaskDetailCard
-                        task={task}
-                        onClose={() => setDetailTask(null)}
-                        onEdit={() => { setDetailTask(null); drawer.current?.openEdit(task); }}
-                        onDelete={() => { setDetailTask(null); drawer.current?.requestDelete(task); }}
-                    />
-                )}
             </div>
         );
     };
@@ -214,14 +212,14 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
                     <div className="lg:max-w-360 lg:mx-auto lg:px-4 flex justify-end">
                         <button
                             onClick={() => drawer.current?.openAdd()}
-                            className={`group pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 text-white backdrop-blur-md transition-all cursor-pointer
+                            className={`group pointer-events-auto flex items-center gap-2 p-3 rounded-full sm:px-4 sm:py-2 sm:rounded-lg border border-white/10 text-white backdrop-blur-md transition-all cursor-pointer
                                 bg-[color-mix(in_srgb,var(--vibranic)_15%,transparent)]
                                 hover:bg-[color-mix(in_srgb,var(--vibranic)_30%,transparent)] hover:border-(--vibranic)
                                 shadow-[0_0_16px_-4px_var(--vibranic)] hover:shadow-[0_0_24px_-2px_var(--vibranic)]
                                 ${drawerOpen ? "pointer-events-none" : ""}`}
                         >
                             <Plus size={18} className="transition-transform group-hover:rotate-90" />
-                            Add task
+                            <span className="hidden sm:inline">Add task</span>
                         </button>
                     </div>
                 </div>,
@@ -235,7 +233,14 @@ export default function ListView({ tasks, setTasks, loading, categories, setCate
                 categories={categories}
                 setCategories={setCategories}
                 onEditingChange={setEditingId}
-                onOpenChange={(open) => { setDrawerOpen(open); onDrawerOpenChange?.(open); }}
+                onOpenChange={setEditOpen}
+            />
+
+            <TaskDetailCard
+                task={detailTask}
+                onClose={() => setDetailTask(null)}
+                onEdit={(t) => { setDetailTask(null); drawer.current?.openEdit(t); }}
+                onDelete={(t) => { setDetailTask(null); drawer.current?.requestDelete(t); }}
             />
 
             <div className="flex flex-col gap-8">
