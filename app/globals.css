@@ -25,13 +25,11 @@ body {
   color: var(--text-primary);
 }
 
-/* Headings carry the space-display personality; body stays in Inter. */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-space-grotesk), var(--font-inter), sans-serif;
   letter-spacing: -0.01em;
 }
 
-/* Space-themed scrollbar — subtle track, vibranic-tinted thumb. */
 .scroll-space {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--vibranic) 45%, transparent) transparent;

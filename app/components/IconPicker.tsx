@@ -4,7 +4,7 @@ import { DynamicIcon, iconNames, type IconName } from "lucide-react/dynamic";
 import { Search } from "lucide-react";
 
 const ALL_ICONS = iconNames as IconName[];
-const LIMIT = 90; // cap rendered icons so we don't lazy-load all ~2000 at once
+const LIMIT = 90;
 
 interface IconPickerProps {
     value: string;

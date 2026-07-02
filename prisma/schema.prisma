@@ -67,9 +67,8 @@ model Task {
   updatedAt      DateTime                @updatedAt
   frequency      RecurrenceFrequency?
   interval       Int                     @default(1)
-  byWeekday      Int[]                   // WEEKLY only: JS getDay() values, 0 = Sun … 6 = Sat
+  byWeekday      Int[]
   recurrenceEnd  DateTime?
-  // Todo board: undated tasks (startDateTime null) live in a TodoState column.
   stateId        String?
   state          TodoState?              @relation(fields: [stateId], references: [id])
   order          Int                     @default(0)

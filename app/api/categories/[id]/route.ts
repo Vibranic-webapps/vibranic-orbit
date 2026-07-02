@@ -11,8 +11,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
         const category = await prisma.category.findFirst({ where: { id, userId } });
         if (!category) return NextResponse.json({ error: "Category not found" }, { status: 404 });
 
-        // Flag the tasks that use this category so the UI can warn the user,
-        // then delete the category (its categoryId is nulled by the SetNull relation).
         const flagged = await prisma.task.updateMany({
             where: { categoryId: id, userId },
             data: { categoryRemoved: true },

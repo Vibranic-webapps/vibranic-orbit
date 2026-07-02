@@ -87,7 +87,7 @@ export default function TodoView({ tasks, setTasks, states, setStates, loading }
         return (
             <div className="flex gap-4 p-4 overflow-x-auto">
                 {[0, 1, 2].map(i => (
-                    <div key={i} className="w-72 shrink-0 rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div key={i} className="w-[82vw] max-w-72 shrink-0 snap-start sm:w-72 rounded-xl border border-white/10 bg-white/5 p-3">
                         <div className="h-5 w-24 rounded bg-white/10 animate-pulse" />
                         <div className="mt-3 space-y-2">
                             {[0, 1].map(j => <div key={j} className="h-10 rounded-lg bg-white/5 animate-pulse" />)}
@@ -134,7 +134,7 @@ export default function TodoView({ tasks, setTasks, states, setStates, loading }
                 <div className="relative shrink-0">
                     <button type="button" title="Move / delete"
                         onClick={() => setMenuFor(menuFor === `card:${task.id}` ? null : `card:${task.id}`)}
-                        className="rounded p-0.5 text-white/40 opacity-0 transition-opacity hover:text-white group-hover:opacity-100 cursor-pointer">
+                        className="rounded p-0.5 text-white/40 opacity-100 transition-opacity hover:text-white sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer">
                         <MoreVertical size={15} />
                     </button>
                     {menuFor === `card:${task.id}` && (
@@ -168,7 +168,7 @@ export default function TodoView({ tasks, setTasks, states, setStates, loading }
                 onDragOver={e => { e.preventDefault(); setDragOver(state.id); }}
                 onDragLeave={() => setDragOver(prev => (prev === state.id ? null : prev))}
                 onDrop={e => { e.preventDefault(); const t = todos.find(t => t.id === draggingId); if (t) moveTodo(t, state.id); setDragOver(null); }}
-                className={`flex w-72 shrink-0 flex-col rounded-xl border bg-white/5 transition-colors ${isOver ? "border-(--vibranic) bg-[color-mix(in_srgb,var(--vibranic)_10%,transparent)]" : "border-white/10"}`}
+                className={`flex w-[82vw] max-w-72 shrink-0 snap-start sm:w-72 flex-col rounded-xl border bg-white/5 transition-colors ${isOver ? "border-(--vibranic) bg-[color-mix(in_srgb,var(--vibranic)_10%,transparent)]" : "border-white/10"}`}
             >
                 {/* header */}
                 <div className="flex items-center gap-2 border-b border-white/10 p-3">
@@ -239,12 +239,12 @@ export default function TodoView({ tasks, setTasks, states, setStates, loading }
         <>
             {menuFor && <div className="fixed inset-0 z-10" onClick={() => setMenuFor(null)} />}
 
-            <div className="flex items-start gap-4 overflow-x-auto p-4">
+            <div className="flex items-start gap-4 overflow-x-auto p-4 snap-x snap-mandatory scroll-p-4">
                 {orphan.length > 0 && (
                     <div
                         onDragOver={e => { e.preventDefault(); setDragOver("unassigned"); }}
                         onDrop={e => { e.preventDefault(); const t = todos.find(t => t.id === draggingId); if (t) moveTodo(t, null); setDragOver(null); }}
-                        className={`flex w-72 shrink-0 flex-col rounded-xl border bg-white/5 ${dragOver === "unassigned" ? "border-(--vibranic)" : "border-white/10"}`}>
+                        className={`flex w-[82vw] max-w-72 shrink-0 snap-start sm:w-72 flex-col rounded-xl border bg-white/5 ${dragOver === "unassigned" ? "border-(--vibranic)" : "border-white/10"}`}>
                         <div className="flex items-center gap-2 border-b border-white/10 p-3">
                             <span className="h-3 w-3 rounded-full bg-white/30" />
                             <span className="flex-1 text-sm font-semibold text-white/70">Unassigned</span>
@@ -256,7 +256,7 @@ export default function TodoView({ tasks, setTasks, states, setStates, loading }
 
                 {[...states].sort((a, b) => a.order - b.order).map(renderColumn)}
 
-                <div className="w-72 shrink-0">
+                <div className="w-[82vw] max-w-72 shrink-0 snap-start sm:w-72">
                     {adding ? (
                         <AddColumn
                             onAdd={name => { if (name.trim()) createState(name.trim(), PALETTE[states.length % PALETTE.length], states.length); setAdding(false); }}
